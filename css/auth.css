@@ -1,12 +1,11 @@
 /* ==========================================================================
    1. GLOBAL RESET & BASE STYLES
-   Removes default browser spacing and applies a consistent font.
    ========================================================================== */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: Arial, sans-serif;
+    font-family: 'Plus Jakarta Sans', Arial, sans-serif;
 }
 
 body {
@@ -16,112 +15,126 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    padding: 24px 16px;
 }
 
 /* ==========================================================================
-   2. TOP BAR & ADMIN LINK
-   Header area above the main card.
-   ========================================================================== */
-.top-bar {
-    width: 100%;
-    max-width: 950px;
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 15px;
-}
-
-.admin-link-btn {
-    background-color: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(52, 211, 153, 0.4);
-    color: #ecfdf5;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-.admin-link-btn:hover {
-    background-color: rgba(52, 211, 153, 0.2);
-    border-color: #34d399;
-}
-
-/* ==========================================================================
-   3. MAIN CONTAINER
-   The wrapper holding the split layout (left and right panels).
+   2. MAIN CONTAINER
    ========================================================================== */
 .main-box {
     width: 100%;
-    max-width: 950px;
+    max-width: 980px;
+    min-height: 600px;
     display: flex;
     flex-direction: row;
+    background: #ffffff;
     border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.45);
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45);
 }
 
 /* ==========================================================================
-   4. LEFT PANEL (BRANDING / INFO)
-   Frosted-glass sidebar showing promotional or informational copy.
+   3. LEFT PANEL (BRANDING / INFO)
    ========================================================================== */
 .left-panel {
-    flex: 1;
-    background: rgba(6, 78, 59, 0.45);
-    backdrop-filter: blur(16px);
+    flex: 0 0 340px;
+    background: linear-gradient(180deg, rgba(6, 78, 59, 0.95), rgba(15, 23, 42, 0.95));
     padding: 40px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     color: #ffffff;
-    border: 1px solid rgba(52, 211, 153, 0.25);
+    border-right: 1px solid rgba(52, 211, 153, 0.2);
 }
 
 .badge {
     display: inline-block;
-    background-color: rgba(52, 211, 153, 0.25);
+    background-color: rgba(52, 211, 153, 0.2);
     color: #6ee7b7;
-    padding: 4px 10px;
-    border-radius: 12px;
+    padding: 5px 12px;
+    border-radius: 20px;
     font-size: 11px;
     letter-spacing: 1px;
-    font-weight: bold;
-    margin-bottom: 15px;
+    font-weight: 700;
+    margin-bottom: 20px;
 }
 
 .title {
-    font-size: 38px;
-    font-weight: bold;
-    line-height: 1.2;
+    font-size: 42px;
+    font-weight: 800;
+    line-height: 1.15;
     color: #f0fdf4;
 }
 
 .subtitle {
     font-size: 13px;
-    color: #a7f3d0;
-    margin-top: 15px;
+    color: #cbd5e1;
+    margin-top: 18px;
     line-height: 1.6;
 }
 
 .footer-tag {
     font-size: 11px;
-    color: #cbd5e1;
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    color: #94a3b8;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
     padding-top: 15px;
 }
 
 /* ==========================================================================
-   5. RIGHT PANEL (FORMS & DIVIDER)
-   White area containing the input forms and visual separator.
+   4. RIGHT PANEL (TAB CONTROLS & FORMS)
    ========================================================================== */
 .right-panel {
-    flex: 1.3;
+    flex: 1;
     background-color: #ffffff;
-    padding: 35px;
+    padding: 36px 40px;
     display: flex;
-    gap: 20px;
-    position: relative;
+    flex-direction: column;
+}
+
+/* Tab Switcher on Top */
+.module-switcher {
+    display: flex;
+    background-color: #f1f5f9;
+    padding: 5px;
+    border-radius: 12px;
+    margin-bottom: 26px;
+    gap: 6px;
+}
+
+.module-tab-btn {
+    flex: 1;
+    padding: 10px 14px;
+    border: none;
+    background: transparent;
+    font-size: 12px;
+    font-weight: 700;
+    color: #64748b;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.module-tab-btn.active {
+    background-color: #059669;
+    color: #ffffff;
+    box-shadow: 0 3px 8px rgba(5, 150, 105, 0.25);
+}
+
+/* Module Container Toggling */
+.module-content {
+    display: none;
+    width: 100%;
+}
+
+.module-content.active {
+    display: block;
+}
+
+/* User Module Split Layout */
+.forms-split-layout {
+    display: flex;
+    gap: 24px;
+    align-items: stretch;
 }
 
 .form-section {
@@ -132,17 +145,25 @@ body {
 
 .form-section h3 {
     color: #064e3b;
-    margin-bottom: 5px;
-    font-size: 18px;
+    margin-bottom: 4px;
+    font-size: 17px;
+    font-weight: 700;
 }
 
 .form-section p {
     color: #64748b;
     font-size: 11px;
-    margin-bottom: 15px;
+    margin-bottom: 16px;
 }
 
-/* Vertical divider between forms */
+/* Centered Admin Form Container */
+.admin-panel-content {
+    max-width: 380px;
+    margin: 10px auto 0;
+    width: 100%;
+}
+
+/* Vertical divider between User Login and Signup */
 .divider {
     display: flex;
     flex-direction: column;
@@ -150,20 +171,20 @@ body {
     justify-content: center;
     color: #94a3b8;
     font-size: 11px;
-    font-weight: bold;
+    font-weight: 700;
 }
 
 .divider-line {
     width: 1px;
-    height: 100%;
+    flex: 1;
     background-color: #e2e8f0;
 }
 
 /* ==========================================================================
-   6. FORM INPUTS & BUTTONS
+   5. INPUTS & BUTTONS
    ========================================================================== */
 .input-group {
-    margin-bottom: 12px;
+    margin-bottom: 11px;
 }
 
 .input-group label {
@@ -171,34 +192,36 @@ body {
     font-size: 11px;
     color: #1e293b;
     margin-bottom: 4px;
-    font-weight: bold;
+    font-weight: 700;
 }
 
 .input-group input {
     width: 100%;
-    padding: 9px;
+    padding: 9px 11px;
     border: 1px solid #cbd5e1;
-    border-radius: 6px;
+    border-radius: 7px;
     font-size: 12px;
+    color: #0f172a;
+    transition: 0.2s ease;
 }
 
 .input-group input:focus {
     outline: none;
     border-color: #059669;
-    box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2);
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
 }
 
 .submit-btn {
     width: 100%;
     padding: 10px;
     border: none;
-    border-radius: 6px;
+    border-radius: 7px;
     background-color: #059669;
-    color: white;
-    font-weight: bold;
+    color: #ffffff;
+    font-weight: 700;
     font-size: 12px;
     cursor: pointer;
-    margin-top: 5px;
+    margin-top: 6px;
     transition: 0.2s;
 }
 
@@ -206,7 +229,6 @@ body {
     background-color: #047857;
 }
 
-/* Secondary dark button variant */
 .submit-btn.dark {
     background-color: #0f172a;
 }
@@ -230,59 +252,20 @@ body {
     display: none;
 }
 
-/* ==========================================================================
-   7. POPUP / MODAL
-   Hidden overlay and dialogue box.
-   ========================================================================== */
-.modal-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.65);
-    justify-content: center;
-    align-items: center;
-    z-index: 100;
-}
-
-.modal-box {
-    background: white;
-    width: 380px;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-}
-
-.close-btn {
-    background: none;
-    border: none;
-    font-size: 18px;
-    cursor: pointer;
-    color: #64748b;
-}
-
+/* Admin Quick Selector Chips */
 .quick-select-box {
     background-color: #f0fdf4;
     border: 1px solid #bbf7d0;
-    padding: 10px;
+    padding: 11px;
     border-radius: 8px;
-    margin-bottom: 15px;
+    margin-bottom: 16px;
 }
 
 .quick-title {
     font-size: 11px;
     color: #166534;
-    font-weight: bold;
-    margin-bottom: 6px;
+    font-weight: 700;
+    margin-bottom: 7px;
 }
 
 .fast-btn-group {
@@ -292,13 +275,13 @@ body {
 
 .fast-chip {
     flex: 1;
-    padding: 5px 4px;
+    padding: 6px 4px;
     background-color: #ffffff;
     border: 1px solid #86efac;
     border-radius: 6px;
     font-size: 11px;
     color: #065f46;
-    font-weight: bold;
+    font-weight: 700;
     cursor: pointer;
     text-align: center;
     transition: 0.2s;
@@ -310,15 +293,20 @@ body {
 }
 
 /* ==========================================================================
-   8. RESPONSIVE / MOBILE RULES
-   Stacks elements vertically when the screen width is 768px or narrower.
+   6. RESPONSIVE (MOBILE / TABLET)
    ========================================================================== */
-@media (max-width: 768px) {
+@media (max-width: 860px) {
     .main-box {
         flex-direction: column;
+        max-width: 520px;
     }
 
-    .right-panel {
+    .left-panel {
+        flex: none;
+        padding: 30px;
+    }
+
+    .forms-split-layout {
         flex-direction: column;
     }
 

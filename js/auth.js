@@ -1,7 +1,5 @@
 /* ==========================================================================
    1. CONSTANTS & SYSTEM CONFIGURATION
-   Restricted to corporate domain (@clientpilot.com).
-   Admins represent executive leadership; Staff represent operations teams.
    ========================================================================== */
 const DOMAIN_RESTRICTION = "@clientpilot.com";
 const ADMIN_DEFAULT_PASS = "admin123";
@@ -22,11 +20,8 @@ const AUTHORIZED_ADMINS = {
     }
 };
 
-
 /* ==========================================================================
-   2. STORAGE INITIALIZATION (MOCK DATABASE)
-   Seeds initial company employees if local storage is empty.
-   Customers/Clients exist purely as records in dashboard modules.
+   2. STORAGE INITIALIZATION
    ========================================================================== */
 function initStorage() {
     const existingStaff = localStorage.getItem("cp_staff_directory");
@@ -55,10 +50,30 @@ function initStorage() {
 
 initStorage();
 
+/* ==========================================================================
+   3. MODULE TAB SWITCHER (ON-CLICK HANDLER)
+   ========================================================================== */
+function switchModule(moduleType) {
+    const userTab = document.getElementById("tabUserBtn");
+    const adminTab = document.getElementById("tabAdminBtn");
+    const userContainer = document.getElementById("userModuleContainer");
+    const adminContainer = document.getElementById("adminModuleContainer");
+
+    if (moduleType === "admin") {
+        if (userTab) userTab.classList.remove("active");
+        if (adminTab) adminTab.classList.add("active");
+        if (userContainer) userContainer.classList.remove("active");
+        if (adminContainer) adminContainer.classList.add("active");
+    } else {
+        if (adminTab) adminTab.classList.remove("active");
+        if (userTab) userTab.classList.add("active");
+        if (adminContainer) adminContainer.classList.remove("active");
+        if (userContainer) userContainer.classList.add("active");
+    }
+}
 
 /* ==========================================================================
-   3. VALIDATION UTILITY HELPERS
-   Reusable checks for corporate domain compliance and session storage.
+   4. VALIDATION UTILITY HELPERS
    ========================================================================== */
 function isCorporateEmail(email) {
     return typeof email === "string" && email.toLowerCase().endsWith(DOMAIN_RESTRICTION);
@@ -72,24 +87,9 @@ function establishSession(userData) {
     window.location.href = "dashboard.html";
 }
 
-
 /* ==========================================================================
-   4. ADMIN MODAL UI CONTROLS
-   Handles modal visibility and test credential auto-fill.
+   5. ADMIN HELPER
    ========================================================================== */
-function openAdminModal() {
-    const modal = document.getElementById("adminModal");
-    if (modal) modal.style.display = "flex";
-}
-
-function closeAdminModal() {
-    const modal = document.getElementById("adminModal");
-    const errorMsg = document.getElementById("adminError");
-
-    if (modal) modal.style.display = "none";
-    if (errorMsg) errorMsg.style.display = "none";
-}
-
 function quickFillAdmin(email) {
     const emailInput = document.getElementById("adminEmail");
     const passInput = document.getElementById("adminPass");
@@ -100,10 +100,8 @@ function quickFillAdmin(email) {
     if (errorMsg) errorMsg.style.display = "none";
 }
 
-
 /* ==========================================================================
-   5. WORKER / EMPLOYEE LOGIN
-   Internal employees logging in to work on client data.
+   6. USER LOGIN
    ========================================================================== */
 function handleUserLogin(e) {
     e.preventDefault();
@@ -115,7 +113,6 @@ function handleUserLogin(e) {
     const email = emailInput ? emailInput.value.trim().toLowerCase() : "";
     const pass = passInput ? passInput.value : "";
 
-    // Verify internal domain
     if (!isCorporateEmail(email)) {
         displayError(errorMsg, `Access restricted to ${DOMAIN_RESTRICTION} email addresses.`);
         return;
@@ -139,10 +136,8 @@ function handleUserLogin(e) {
     }
 }
 
-
 /* ==========================================================================
-   6. WORKER / EMPLOYEE ONBOARDING (SIGNUP)
-   Registers a new internal team member.
+   7. USER SIGNUP
    ========================================================================== */
 function handleUserSignup(e) {
     e.preventDefault();
@@ -163,7 +158,6 @@ function handleUserSignup(e) {
         return;
     }
 
-    // Verify internal domain
     if (!isCorporateEmail(email)) {
         displayError(errorMsg, `Registration permitted only via company domain (${DOMAIN_RESTRICTION}).`);
         if (successMsg) successMsg.style.display = "none";
@@ -179,7 +173,6 @@ function handleUserSignup(e) {
         return;
     }
 
-    // Register new internal staff member
     const newStaffMember = {
         name: name,
         email: email,
@@ -191,7 +184,6 @@ function handleUserSignup(e) {
     staffDirectory.push(newStaffMember);
     localStorage.setItem("cp_staff_directory", JSON.stringify(staffDirectory));
 
-    // Clear inputs and present success state
     clearError(errorMsg);
     if (successMsg) {
         successMsg.textContent = "Profile registered successfully. You may now log in.";
@@ -203,10 +195,8 @@ function handleUserSignup(e) {
     if (passInput) passInput.value = "";
 }
 
-
 /* ==========================================================================
-   7. ADMIN AUTHENTICATION
-   Restricted portal for company executives.
+   8. ADMIN LOGIN
    ========================================================================== */
 function handleAdminLogin(e) {
     e.preventDefault();
@@ -234,9 +224,8 @@ function handleAdminLogin(e) {
     }
 }
 
-
 /* ==========================================================================
-   8. ERROR HANDLING HELPERS
+   9. FEEDBACK HELPERS
    ========================================================================== */
 function displayError(element, message) {
     if (element) {

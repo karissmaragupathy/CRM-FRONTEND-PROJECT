@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ClientPilot — Enterprise Workspace</title>
+    <title>ClientPilot — Enterprise Console</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="css/dashboard.css">
@@ -12,294 +12,332 @@
 
 <body>
     <div class="dashboard-app">
-        <!-- Sidebar Navigation -->
-        <aside class="sidebar">
-            <div>
+        <!-- TIER 1: PRIMARY AMAZON-STYLE TOP CONSOLE BAR -->
+        <header class="console-header">
+            <div class="header-left">
                 <div class="brand" onclick="showOverviewNav()">
                     <div class="brand-logo">CP</div>
-                    <div>
-                        <div class="brand-name">ClientPilot</div>
-                        <div class="brand-subtitle" id="brandRoleSubtitle">ENTERPRISE CRM</div>
+                    <div class="brand-text">
+                        <span class="brand-title">ClientPilot</span>
+                        <span class="brand-edition" id="brandRoleSubtitle">ENTERPRISE CONSOLE</span>
                     </div>
                 </div>
 
-                <div class="nav-title">Workplace Operations</div>
-                <div class="nav-list">
-                    <button class="nav-item active" id="nav-overview" onclick="showOverviewNav()">
-                        <div class="nav-icon">▦</div>
-                        <span>Overview</span>
-                    </button>
-                    <button class="nav-item" id="nav-contacts" onclick="showContactsNav()">
-                        <div class="nav-icon">♙</div>
-                        <span>Client Accounts</span>
-                    </button>
-                    <button class="nav-item" id="nav-deals" onclick="showDealsNav()">
-                        <div class="nav-icon">◆</div>
-                        <span>Deals & Pipeline</span>
-                    </button>
-                    <button class="nav-item" id="nav-schedule" onclick="showScheduleNav()">
-                        <div class="nav-icon">◷</div>
-                        <span>Schedule</span>
-                    </button>
-
-                    <!-- Exclusive Administration Navigation -->
-                    <div class="nav-title admin-only" id="adminHeader">Executive Management</div>
-                    <button class="nav-item admin-only" id="nav-employees" onclick="showEmployeesNav()">
-                        <div class="nav-icon">♟</div>
-                        <span>Staff Directory</span>
-                    </button>
-                    <button class="nav-item admin-only" id="nav-activity" onclick="showActivityNav()">
-                        <div class="nav-icon">↗</div>
-                        <span>Audit Stream</span>
-                    </button>
+                <div class="role-pill-indicator" id="roleIndicatorBadge">
+                    <span class="indicator-dot"></span>
+                    <span id="roleIndicatorText">STAFF WORKSPACE</span>
                 </div>
             </div>
 
-            <div class="sidebar-bottom">
-                <div class="admin-badge" onclick="showCurrentUser()">
-                    <div class="admin-badge-title">ACTIVE SEAT</div>
-                    <div class="admin-badge-value" id="currentModuleLabel">VERIFYING...</div>
+            <!-- Global Search Bar -->
+            <div class="header-center">
+                <div class="console-search">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="globalSearchInput"
+                        placeholder="Search clients, deals, employees, or telemetry logs..."
+                        onkeydown="if(event.key==='Enter') handleSearch()">
+                    <button type="button" class="search-btn" onclick="handleSearch()">Search</button>
                 </div>
-                <button class="logout-btn" onclick="logout()">⎋ &nbsp; End Session</button>
             </div>
-        </aside>
 
-        <!-- Workspace Viewport -->
-        <main class="workspace">
-            <!-- Top Header & Session Pill -->
-            <header class="top-header">
+            <!-- Console Profile & Session Details -->
+            <div class="header-right">
+                <div class="service-region">
+                    <span class="region-label">Region</span>
+                    <span class="region-value">ap-south-1 (IN)</span>
+                </div>
+
+                <div class="account-widget" onclick="showCurrentUser()">
+                    <div class="avatar-box" id="avatarInitial">U</div>
+                    <div class="account-meta">
+                        <div class="account-name" id="displayUserFullName">Session Active</div>
+                        <div class="account-role" id="displayUserRole">Operations Specialist</div>
+                    </div>
+                </div>
+
+                <button class="signout-btn" onclick="logout()" title="Sign Out of Session">Sign Out</button>
+            </div>
+        </header>
+
+        <!-- TIER 2: SECONDARY HORIZONTAL SUB-NAVIGATION BAR -->
+        <nav class="sub-navbar">
+            <div class="sub-nav-links">
+                <button class="sub-nav-item active" id="nav-overview" onclick="showOverviewNav()">
+                    <span class="nav-ico">▦</span> Console Home
+                </button>
+                <button class="sub-nav-item" id="nav-contacts" onclick="showContactsNav()">
+                    <span class="nav-ico">♙</span> Client Accounts
+                </button>
+                <button class="sub-nav-item" id="nav-deals" onclick="showDealsNav()">
+                    <span class="nav-ico">◆</span> Pipeline & Deals
+                </button>
+                <button class="sub-nav-item" id="nav-schedule" onclick="showScheduleNav()">
+                    <span class="nav-ico">◷</span> Operations Schedule
+                </button>
+
+                <!-- ADMIN EXCLUSIVE TABS -->
+                <button class="sub-nav-item admin-only" id="nav-employees" onclick="showEmployeesNav()">
+                    <span class="nav-ico">♟</span> Personnel Directory
+                </button>
+                <button class="sub-nav-item admin-only" id="nav-activity" onclick="showActivityNav()">
+                    <span class="nav-ico">↗</span> Audit Telemetry
+                </button>
+            </div>
+
+            <div class="sub-nav-status">
+                <span class="system-status-badge">● Systems Operational</span>
+            </div>
+        </nav>
+
+        <!-- CONSOLE NOTICE BANNER: CLEAR ROLE CONTEXT -->
+        <div class="context-banner" id="contextBanner">
+            <div class="context-banner-content">
+                <span class="banner-badge" id="bannerBadge">ACTIVE MODULE</span>
+                <span class="banner-text" id="moduleBannerText">Loading operational workspace details...</span>
+            </div>
+            <div class="banner-actions">
+                <button type="button" class="banner-action-btn" onclick="showCurrentUser()">Audit Clearance</button>
+            </div>
+        </div>
+
+        <!-- MAIN CONSOLE WORKSPACE VIEWPORT -->
+        <main class="console-viewport">
+            <!-- GREETING ROW -->
+            <div class="welcome-row">
                 <div>
-                    <div class="header-label" id="moduleTypeBanner">Corporate Workspace</div>
-                    <h1 class="greeting-title">
-                        Good day, <span id="displayUserName">Staff</span> 👋
-                    </h1>
-                    <p class="greeting-sub" id="greetingSub">Synchronizing operational metrics and customer pipeline...
+                    <h1 class="welcome-heading">Welcome back, <span id="displayUserName">Associate</span></h1>
+                    <p class="welcome-sub" id="greetingSub">Synchronizing active data nodes and client pipeline state.
                     </p>
                 </div>
-
-                <div class="user-pill" onclick="showCurrentUser()">
-                    <div class="avatar-circle" id="avatarInitial">U</div>
-                    <div>
-                        <div class="user-name" id="displayUserFullName">Session Active</div>
-                        <div class="user-role" id="displayUserRole">Operations Specialist</div>
+                <div class="quick-pill-stats">
+                    <div class="pill-stat">
+                        <span class="pill-label">Access Level</span>
+                        <strong class="pill-val" id="pillAccessLevel">Level 1 - Ops</strong>
                     </div>
                 </div>
-            </header>
+            </div>
 
-            <!-- Metrics / KPI Row -->
+            <!-- METRIC KPI ROW -->
             <section class="kpi-grid">
                 <div class="kpi-card" onclick="showDealsNav()">
-                    <div class="kpi-top">
-                        <div class="kpi-title">Total Pipeline</div>
-                        <div class="kpi-icon">₹</div>
+                    <div class="kpi-header">
+                        <span class="kpi-title">Gross Pipeline Value</span>
+                        <span class="kpi-chip">₹ INR</span>
                     </div>
-                    <div class="kpi-number" id="pipelineStat">₹42.8L</div>
-                    <div class="kpi-change">↑ 16.4% from last quarter</div>
+                    <div class="kpi-metric" id="pipelineStat">₹42.8L</div>
+                    <div class="kpi-trend positive">↑ 16.4% quarterly growth</div>
                 </div>
 
                 <div class="kpi-card" onclick="showDealsNav()">
-                    <div class="kpi-top">
-                        <div class="kpi-title">Active Deals</div>
-                        <div class="kpi-icon">◆</div>
+                    <div class="kpi-header">
+                        <span class="kpi-title">Active Contract Records</span>
+                        <span class="kpi-chip">Deals</span>
                     </div>
-                    <div class="kpi-number" id="activeDealsStat">31</div>
-                    <div class="kpi-change">7 proposals under review</div>
+                    <div class="kpi-metric" id="activeDealsStat">31</div>
+                    <div class="kpi-trend">7 pending technical sign-off</div>
                 </div>
 
                 <div class="kpi-card"
-                    onclick="openModal('Quarterly Conversion Metrics', 'Current conversion rate: 74%\n• Closed Won: 18 Deals\n• Average sales cycle: 14 days\n• Total closed revenue: ₹18.5 Lakh')">
-                    <div class="kpi-top">
-                        <div class="kpi-title">Win Rate</div>
-                        <div class="kpi-icon">%</div>
+                    onclick="openModal('Conversion Performance', 'Current Conversion Rate: 74%\n• Closed Won: 18 Deals\n• Average Deal Cycle: 14 Days\n• Realized Revenue: ₹18.5 Lakh')">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Execution Win Rate</span>
+                        <span class="kpi-chip">% Rate</span>
                     </div>
-                    <div class="kpi-number">74%</div>
-                    <div class="kpi-change">↑ 4.2% efficiency gain</div>
+                    <div class="kpi-metric">74%</div>
+                    <div class="kpi-trend positive">↑ 4.2% above baseline</div>
                 </div>
 
                 <div class="kpi-card" onclick="handleTeamCardClick()">
-                    <div class="kpi-top">
-                        <div class="kpi-title">Staff Clearance</div>
-                        <div class="kpi-icon">●</div>
+                    <div class="kpi-header">
+                        <span class="kpi-title" id="teamCardTitle">Internal Headcount</span>
+                        <span class="kpi-chip">Seats</span>
                     </div>
-                    <div class="kpi-number" id="teamOnlineStat">8 / 12</div>
-                    <div class="kpi-change" id="teamChangeText">Authorized internal seats</div>
+                    <div class="kpi-metric" id="teamOnlineStat">8 / 12</div>
+                    <div class="kpi-trend" id="teamCardSubtitle">Active authenticated personnel</div>
                 </div>
             </section>
 
-            <!-- Main Layout Split -->
-            <div class="main-grid">
-                <!-- Left Column: Pipeline & Client Records -->
-                <div class="left-column">
-                    <!-- Deals Pipeline -->
-                    <section class="panel">
-                        <div class="panel-header">
+            <!-- CONSOLE 2-COLUMN GRID -->
+            <div class="console-grid">
+                <!-- LEFT COLUMN -->
+                <div class="console-col primary-col">
+                    <!-- PIPELINE VISUALIZER -->
+                    <section class="console-card">
+                        <div class="card-header">
                             <div>
-                                <div class="panel-title">Pipeline Trajectory</div>
-                                <div class="panel-subtitle">Stage movements and closed revenue</div>
+                                <h3 class="card-title">Commercial Pipeline Tracker</h3>
+                                <p class="card-subtitle">Real-time status of stages across client accounts</p>
                             </div>
-                            <div class="view-link" onclick="showDealsNav()">Full Pipeline →</div>
+                            <button type="button" class="card-link-btn" onclick="showDealsNav()">Explore Stages
+                                →</button>
                         </div>
 
-                        <div class="pipeline-summary">
-                            <div>
-                                <div class="pipeline-value">₹42.8L</div>
-                                <div class="pipeline-label">Total Opportunity</div>
+                        <div class="pipeline-summary-bar">
+                            <div class="summary-box">
+                                <span class="summary-lbl">Pipeline Target</span>
+                                <span class="summary-val">₹42.8L</span>
                             </div>
-                            <div>
-                                <div class="pipeline-value" id="summaryDealCount">31</div>
-                                <div class="pipeline-label">Active Contracts</div>
+                            <div class="summary-box">
+                                <span class="summary-lbl">Open Deals</span>
+                                <span class="summary-val" id="summaryDealCount">31</span>
                             </div>
-                            <div>
-                                <div class="pipeline-value">₹18.5L</div>
-                                <div class="pipeline-label">Closed Won</div>
+                            <div class="summary-box">
+                                <span class="summary-lbl">Closed & Invoiced</span>
+                                <span class="summary-val text-green">₹18.5L</span>
                             </div>
                         </div>
 
-                        <div class="pipeline-chart" onclick="showDealsNav()">
-                            <div class="pipeline-column">
-                                <div class="pipeline-bar" style="height: 85%;"></div>
-                                <div class="pipeline-stage">Inbound</div>
+                        <div class="chart-container" onclick="showDealsNav()">
+                            <div class="chart-col">
+                                <div class="chart-bar" style="height: 85%;"></div>
+                                <span class="chart-lbl">Inbound</span>
                             </div>
-                            <div class="pipeline-column">
-                                <div class="pipeline-bar" style="height: 68%;"></div>
-                                <div class="pipeline-stage">Technical</div>
+                            <div class="chart-col">
+                                <div class="chart-bar" style="height: 65%;"></div>
+                                <span class="chart-lbl">Review</span>
                             </div>
-                            <div class="pipeline-column">
-                                <div class="pipeline-bar" style="height: 52%;"></div>
-                                <div class="pipeline-stage">Proposal</div>
+                            <div class="chart-col">
+                                <div class="chart-bar" style="height: 50%;"></div>
+                                <span class="chart-lbl">Proposal</span>
                             </div>
-                            <div class="pipeline-column">
-                                <div class="pipeline-bar" style="height: 38%;"></div>
-                                <div class="pipeline-stage">Negotiation</div>
+                            <div class="chart-col">
+                                <div class="chart-bar" style="height: 38%;"></div>
+                                <span class="chart-lbl">Negotiation</span>
                             </div>
-                            <div class="pipeline-column">
-                                <div class="pipeline-bar" style="height: 25%;"></div>
-                                <div class="pipeline-stage">Executed</div>
+                            <div class="chart-col">
+                                <div class="chart-bar accent-bar" style="height: 25%;"></div>
+                                <span class="chart-lbl">Closed</span>
                             </div>
                         </div>
                     </section>
 
-                    <!-- Attention Required -->
-                    <section class="panel">
-                        <div class="panel-header">
-                            <div>
-                                <div class="panel-title">Immediate Attention</div>
-                                <div class="panel-subtitle">Stalled deals requiring escalation</div>
+                    <!-- ESCALATIONS & ALERTS -->
+                    <section class="console-card alert-card">
+                        <div class="alert-content">
+                            <div class="alert-icon">⚠</div>
+                            <div class="alert-text-group">
+                                <div class="alert-title">Critical SLA Alert — TechNova Enterprise</div>
+                                <div class="alert-desc">Proposal valuation at ₹7.8L has stalled without client
+                                    engagement for 9 consecutive days.</div>
                             </div>
-                            <div class="view-link" onclick="scheduleFollowUp()">1 pending</div>
                         </div>
-
-                        <div class="attention">
-                            <div class="attention-left">
-                                <div class="warning-icon">!</div>
-                                <div>
-                                    <div class="attention-title">TechNova Enterprise Proposal</div>
-                                    <div class="attention-text">₹7.8L proposal has had no response from procurement for
-                                        9 days.</div>
-                                </div>
-                            </div>
-                            <button type="button" class="small-btn" onclick="scheduleFollowUp()">Queue
-                                Follow-up</button>
-                        </div>
+                        <button type="button" class="alert-action-btn" onclick="scheduleFollowUp()">Dispatch
+                            Escalation</button>
                     </section>
 
-                    <!-- Client Accounts (Customers) -->
-                    <section class="panel">
-                        <div class="panel-header">
+                    <!-- CLIENT OVERVIEW -->
+                    <section class="console-card">
+                        <div class="card-header">
                             <div>
-                                <div class="panel-title">Client Health Overview</div>
-                                <div class="panel-subtitle">Customer relationship indicators</div>
+                                <h3 class="card-title">Priority Client Accounts</h3>
+                                <p class="card-subtitle">Key enterprise accounts managed under current seat</p>
                             </div>
-                            <div class="view-link" onclick="showContactsNav()">All Clients →</div>
+                            <button type="button" class="card-link-btn" onclick="showContactsNav()">View Directory
+                                →</button>
                         </div>
 
-                        <div class="client-row"
-                            onclick="showClient('Ananya Rao', 'Apex Core Systems', 'VP Technology', '92%', 'Optimal Engagement')">
-                            <div class="client-avatar">AR</div>
-                            <div class="client-info">
-                                <div class="client-name">Ananya Rao</div>
-                                <div class="client-company">Apex Core Systems</div>
-                            </div>
-                            <div class="health-container">
-                                <div class="health-top">
-                                    <span>Health</span>
-                                    <span class="health-number">92%</span>
-                                </div>
-                                <div class="health-bar">
-                                    <div class="health-fill" style="width: 92%;"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="client-row"
-                            onclick="showClient('Rohan Mehta', 'FinTech Dynamics', 'Lead Operations', '74%', 'Follow-up Scheduled')">
-                            <div class="client-avatar">RM</div>
-                            <div class="client-info">
-                                <div class="client-name">Rohan Mehta</div>
-                                <div class="client-company">FinTech Dynamics</div>
-                            </div>
-                            <div class="health-container">
-                                <div class="health-top">
-                                    <span>Health</span>
-                                    <span class="health-number">74%</span>
-                                </div>
-                                <div class="health-bar">
-                                    <div class="health-fill medium" style="width: 74%;"></div>
-                                </div>
-                            </div>
+                        <div class="data-table-container">
+                            <table class="console-table">
+                                <thead>
+                                    <tr>
+                                        <th>Representative</th>
+                                        <th>Organization</th>
+                                        <th>Designation</th>
+                                        <th>Engagement Health</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr
+                                        onclick="showClient('Ananya Rao', 'Apex Core Systems', 'VP Technology', '92%', 'Optimal Engagement')">
+                                        <td class="bold-cell">Ananya Rao</td>
+                                        <td>Apex Core Systems</td>
+                                        <td>VP Technology</td>
+                                        <td><span class="health-tag tag-high">92% Optimal</span></td>
+                                    </tr>
+                                    <tr
+                                        onclick="showClient('Rohan Mehta', 'FinTech Dynamics', 'Lead Operations', '74%', 'Follow-up Scheduled')">
+                                        <td class="bold-cell">Rohan Mehta</td>
+                                        <td>FinTech Dynamics</td>
+                                        <td>Lead Operations</td>
+                                        <td><span class="health-tag tag-med">74% Moderate</span></td>
+                                    </tr>
+                                    <tr
+                                        onclick="showClient('Vikram Nair', 'MediCore Health', 'Procurement Specialist', '88%', 'In Contract Sync')">
+                                        <td class="bold-cell">Vikram Nair</td>
+                                        <td>MediCore Health</td>
+                                        <td>Procurement Specialist</td>
+                                        <td><span class="health-tag tag-high">88% Active</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </section>
                 </div>
 
-                <!-- Right Column: Staff Directory, Audit & Actions -->
-                <div class="right-column">
-                    <!-- Staff Directory Panel (Content dynamically styled for Admin vs Worker) -->
-                    <section class="panel" id="teamPanel">
-                        <div class="panel-header">
+                <!-- RIGHT COLUMN -->
+                <div class="console-col secondary-col">
+                    <!-- TEAM DIRECTORY PANEL (Role specific content) -->
+                    <section class="console-card" id="teamPanel">
+                        <div class="card-header">
                             <div>
-                                <div class="panel-title">Internal Team</div>
-                                <div class="panel-subtitle">Assigned colleagues & clearances</div>
+                                <h3 class="card-title" id="teamPanelTitle">Internal Staff Directory</h3>
+                                <p class="card-subtitle" id="teamPanelSubtitle">Assigned operations team members</p>
                             </div>
-                            <div class="view-link admin-only" onclick="showEmployeesNav()">Manage All →</div>
+                            <button type="button" class="card-link-btn admin-only" onclick="showEmployeesNav()">Manage
+                                →</button>
                         </div>
-                        <div id="teamMemberListContainer"></div>
+                        <div id="teamMemberListContainer" class="list-container"></div>
                     </section>
 
-                    <!-- Audit Stream & Activity -->
-                    <section class="panel">
-                        <div class="panel-header">
+                    <!-- AUDIT & ACTIVITY FEED -->
+                    <section class="console-card">
+                        <div class="card-header">
                             <div>
-                                <div class="panel-title">Activity Stream</div>
-                                <div class="panel-subtitle">Latest team actions</div>
+                                <h3 class="card-title">Telemetry & Activity Audit</h3>
+                                <p class="card-subtitle">Real-time trace of operational events</p>
                             </div>
-                            <div class="view-link admin-only" onclick="showActivityNav()">Audit Log →</div>
+                            <button type="button" class="card-link-btn admin-only" onclick="showActivityNav()">Inspect
+                                All →</button>
                         </div>
-                        <div id="activityStreamContainer">
-                            <div class="activity-item">
-                                <div class="activity-time">10:15</div>
-                                <div class="activity-text"><strong>Priya Sharma</strong> advanced Apex Core to Proposal
-                                    review.</div>
+
+                        <div class="timeline-feed" id="activityStreamContainer">
+                            <div class="timeline-row">
+                                <span class="time-stamp">10:15 IST</span>
+                                <div class="timeline-body">
+                                    <strong>Priya Sharma</strong> advanced <em>Apex Core Systems</em> to Technical
+                                    Validation.
+                                </div>
                             </div>
-                            <div class="activity-item">
-                                <div class="activity-time">11:20</div>
-                                <div class="activity-text"><strong>Aditya Rao</strong> completed technical alignment
-                                    sync.</div>
+                            <div class="timeline-row">
+                                <span class="time-stamp">11:20 IST</span>
+                                <div class="timeline-body">
+                                    <strong>Aditya Rao</strong> concluded account sync with <em>FinTech Dynamics</em>.
+                                </div>
+                            </div>
+                            <div class="timeline-row admin-only">
+                                <span class="time-stamp">12:05 IST</span>
+                                <div class="timeline-body">
+                                    <strong>Rohit Verma</strong> approved database backup synchronization.
+                                </div>
                             </div>
                         </div>
                     </section>
 
-                    <!-- Operational Quick Actions -->
-                    <section class="panel">
-                        <div class="panel-header">
-                            <div>
-                                <div class="panel-title">Quick Actions</div>
-                                <div class="panel-subtitle">Workspace tasks</div>
-                            </div>
+                    <!-- QUICK OPERATIONS ACTIONS -->
+                    <section class="console-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Workspace Quick Tools</h3>
                         </div>
-                        <div class="quick-actions">
-                            <button type="button" class="quick-btn" onclick="openNewDealModal()">+ New Deal</button>
-                            <button type="button" class="quick-btn" onclick="logCall()">+ Log Call</button>
-                            <button type="button" class="quick-btn" onclick="addNote()">+ Add Note</button>
+                        <div class="action-grid">
+                            <button type="button" class="console-action-btn" onclick="openNewDealModal()">
+                                <span>➕</span> Log Deal Record
+                            </button>
+                            <button type="button" class="console-action-btn" onclick="logCall()">
+                                <span>📞</span> Register Client Call
+                            </button>
+                            <button type="button" class="console-action-btn" onclick="addNote()">
+                                <span>📝</span> Add Workspace Note
+                            </button>
                         </div>
                     </section>
                 </div>
@@ -307,16 +345,16 @@
         </main>
     </div>
 
-    <!-- Reusable Modal Window -->
+    <!-- DIALOG MODAL -->
     <div class="modal-overlay" id="infoModal">
-        <div class="modal-card">
+        <div class="modal-box">
             <div class="modal-header">
-                <div class="modal-title" id="modalHeading">Workspace Dialog</div>
-                <button type="button" class="close-btn" onclick="closeModal()">✕</button>
+                <h4 class="modal-title" id="modalHeading">Console Inspector</h4>
+                <button type="button" class="modal-close-btn" onclick="closeModal()">✕</button>
             </div>
-            <div class="modal-content" id="modalContent"></div>
+            <div class="modal-body" id="modalContent"></div>
             <div class="modal-footer">
-                <button type="button" class="small-btn" onclick="closeModal()">Acknowledge</button>
+                <button type="button" class="modal-primary-btn" onclick="closeModal()">Dismiss</button>
             </div>
         </div>
     </div>

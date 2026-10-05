@@ -11,10 +11,6 @@
 </head>
 
 <body>
-    <div class="top-bar">
-        <button class="admin-link-btn" onclick="openAdminModal()">🔒 Executive Portal Access</button>
-    </div>
-
     <main class="main-box">
         <!-- Brand & Context Info Panel -->
         <section class="left-panel">
@@ -27,98 +23,113 @@
             <div class="footer-tag">Domain Perimeter: <b>@clientpilot.com</b></div>
         </section>
 
-        <!-- Forms: Team Login & Registration -->
+        <!-- Right Side: Dual Module Interface (User Module vs. Admin Module) -->
         <section class="right-panel">
-            <!-- Login -->
-            <div class="form-section">
-                <h3>Team Login</h3>
-                <p>Access your operational workspace</p>
-                <form onsubmit="handleUserLogin(event)">
-                    <div class="input-group">
-                        <label for="loginEmail">Corporate Email</label>
-                        <input type="email" id="loginEmail" placeholder="priya.s@clientpilot.com" required
-                            autocomplete="email">
-                    </div>
-                    <div class="input-group">
-                        <label for="loginPass">Password</label>
-                        <input type="password" id="loginPass" placeholder="••••••••" required
-                            autocomplete="current-password">
-                    </div>
-                    <button type="submit" class="submit-btn">Enter Workspace</button>
-                    <div class="error-msg" id="loginError"></div>
-                </form>
+            <!-- Explicit Module Selector Tabs -->
+            <div class="module-switcher">
+                <button type="button" class="module-tab-btn active" id="tabUserBtn" onclick="switchModule('user')">
+                    👤 User / Staff Module
+                </button>
+                <button type="button" class="module-tab-btn" id="tabAdminBtn" onclick="switchModule('admin')">
+                    🔒 Executive / Admin Module
+                </button>
             </div>
 
-            <!-- Separator -->
-            <div class="divider">
-                <div class="divider-line"></div>
-                <span style="padding: 5px 0;">or</span>
-                <div class="divider-line"></div>
+            <!-- MODULE 1: USER / WORKER SECTION -->
+            <div class="module-content active" id="userModuleContainer">
+                <div class="forms-split-layout">
+                    <!-- Login Form -->
+                    <div class="form-section">
+                        <h3>Team Login</h3>
+                        <p>Access your operational workspace</p>
+                        <form onsubmit="handleUserLogin(event)">
+                            <div class="input-group">
+                                <label for="loginEmail">Corporate Email</label>
+                                <input type="email" id="loginEmail" placeholder="priya.s@clientpilot.com" required
+                                    autocomplete="email">
+                            </div>
+                            <div class="input-group">
+                                <label for="loginPass">Password</label>
+                                <input type="password" id="loginPass" placeholder="••••••••" required
+                                    autocomplete="current-password">
+                            </div>
+                            <button type="submit" class="submit-btn">Enter Workspace</button>
+                            <div class="error-msg" id="loginError"></div>
+                        </form>
+                    </div>
+
+                    <div class="divider">
+                        <div class="divider-line"></div>
+                        <span style="padding: 5px 0;">or</span>
+                        <div class="divider-line"></div>
+                    </div>
+
+                    <!-- Registration Form -->
+                    <div class="form-section">
+                        <h3>Join the Team</h3>
+                        <p>Register an authorized seat</p>
+                        <form onsubmit="handleUserSignup(event)">
+                            <div class="input-group">
+                                <label for="signupName">Full Name</label>
+                                <input type="text" id="signupName" placeholder="Aditya Rao" required
+                                    autocomplete="name">
+                            </div>
+                            <div class="input-group">
+                                <label for="signupEmail">Corporate Email</label>
+                                <input type="email" id="signupEmail" placeholder="aditya.r@clientpilot.com" required
+                                    autocomplete="email">
+                            </div>
+                            <div class="input-group">
+                                <label for="signupPass">Set Password</label>
+                                <input type="password" id="signupPass" placeholder="••••••••" required
+                                    autocomplete="new-password">
+                            </div>
+                            <button type="submit" class="submit-btn dark">Create Account</button>
+                            <div class="error-msg" id="signupError"></div>
+                            <div class="success-msg" id="signupSuccess"></div>
+                        </form>
+                    </div>
+                </div>
             </div>
 
-            <!-- Registration -->
-            <div class="form-section">
-                <h3>Join the Team</h3>
-                <p>Register an authorized workspace seat</p>
-                <form onsubmit="handleUserSignup(event)">
-                    <div class="input-group">
-                        <label for="signupName">Full Name</label>
-                        <input type="text" id="signupName" placeholder="Aditya Rao" required autocomplete="name">
+            <!-- MODULE 2: ADMIN / EXECUTIVE SECTION -->
+            <div class="module-content" id="adminModuleContainer">
+                <div class="admin-panel-content">
+                    <div class="form-section">
+                        <h3>Administrator Gateway</h3>
+                        <p>Executive management, audit logs, and directory controls</p>
+
+                        <div class="quick-select-box">
+                            <div class="quick-title">Quick Select Authorized Admin:</div>
+                            <div class="fast-btn-group">
+                                <button type="button" class="fast-chip"
+                                    onclick="quickFillAdmin('arjun.mehta@clientpilot.com')">Arjun (Dir)</button>
+                                <button type="button" class="fast-chip"
+                                    onclick="quickFillAdmin('kavita.nair@clientpilot.com')">Kavita (Ops)</button>
+                                <button type="button" class="fast-chip"
+                                    onclick="quickFillAdmin('rohit.verma@clientpilot.com')">Rohit (Sec)</button>
+                            </div>
+                        </div>
+
+                        <form onsubmit="handleAdminLogin(event)">
+                            <div class="input-group">
+                                <label for="adminEmail">Admin Corporate Email</label>
+                                <input type="email" id="adminEmail" placeholder="arjun.mehta@clientpilot.com" required
+                                    autocomplete="email">
+                            </div>
+                            <div class="input-group">
+                                <label for="adminPass">Security Passkey</label>
+                                <input type="password" id="adminPass" placeholder="••••••••" required
+                                    autocomplete="current-password">
+                            </div>
+                            <button type="submit" class="submit-btn dark">Authenticate Clearance</button>
+                            <div class="error-msg" id="adminError"></div>
+                        </form>
                     </div>
-                    <div class="input-group">
-                        <label for="signupEmail">Corporate Email</label>
-                        <input type="email" id="signupEmail" placeholder="aditya.r@clientpilot.com" required
-                            autocomplete="email">
-                    </div>
-                    <div class="input-group">
-                        <label for="signupPass">Set Password</label>
-                        <input type="password" id="signupPass" placeholder="••••••••" required
-                            autocomplete="new-password">
-                    </div>
-                    <button type="submit" class="submit-btn dark">Create Account</button>
-                    <div class="error-msg" id="signupError"></div>
-                    <div class="success-msg" id="signupSuccess"></div>
-                </form>
+                </div>
             </div>
         </section>
     </main>
-
-    <!-- Executive Admin Gateway Modal -->
-    <div class="modal-overlay" id="adminModal">
-        <div class="modal-box">
-            <div class="modal-header">
-                <h4 style="color:#064e3b; font-size:15px; font-weight:800;">Executive Gateway (Admin Module)</h4>
-                <button type="button" class="close-btn" onclick="closeAdminModal()">✕</button>
-            </div>
-
-            <div class="quick-select-box">
-                <div class="quick-title">Quick Select Authorized Admin:</div>
-                <div class="fast-btn-group">
-                    <button type="button" class="fast-chip"
-                        onclick="quickFillAdmin('arjun.mehta@clientpilot.com')">Arjun (Dir)</button>
-                    <button type="button" class="fast-chip"
-                        onclick="quickFillAdmin('kavita.nair@clientpilot.com')">Kavita (Ops)</button>
-                    <button type="button" class="fast-chip"
-                        onclick="quickFillAdmin('rohit.verma@clientpilot.com')">Rohit (Sec)</button>
-                </div>
-            </div>
-
-            <form onsubmit="handleAdminLogin(event)">
-                <div class="input-group">
-                    <label for="adminEmail">Admin Corporate Email</label>
-                    <input type="email" id="adminEmail" placeholder="arjun.mehta@clientpilot.com" required
-                        autocomplete="email">
-                </div>
-                <div class="input-group">
-                    <label for="adminPass">Security Passkey</label>
-                    <input type="password" id="adminPass" placeholder="••••••••" required
-                        autocomplete="current-password">
-                </div>
-                <button type="submit" class="submit-btn dark">Authenticate Clearance</button>
-                <div class="error-msg" id="adminError"></div>
-            </form>
-        </div>
-    </div>
 
     <script src="js/auth.js"></script>
 </body>

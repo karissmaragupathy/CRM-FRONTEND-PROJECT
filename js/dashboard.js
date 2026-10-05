@@ -1,38 +1,41 @@
 /* ==========================================================================
-   1. SESSION VALIDATION & DATA SYNCHRONIZATION
-   Reads session data established during authentication (auth.js).
-   Supports backward compatibility with older session key names.
+   1. SESSION READ & ROLE DETERMINATION
    ========================================================================== */
 const rawSession = localStorage.getItem("cp_current_session") || localStorage.getItem("cp_current_user");
 
-// Guard: Redirect immediately if unauthenticated
+// Guard: Redirect to index if not authenticated
 if (!rawSession) {
     window.location.href = "index.html";
 }
 
 const currentUser = JSON.parse(rawSession);
 
-// An account is an Admin if accountType === 'Admin' or has executive roles
+// Explicit distinction between Admin and Staff
 const isAdmin = currentUser.accountType === "Admin" ||
     currentUser.role === "Administrator" ||
     currentUser.role === "Executive Director" ||
     currentUser.role === "Head of Operations" ||
     currentUser.role === "Lead Systems & Security";
 
-
 /* ==========================================================================
    2. DOM ELEMENT CACHE
-   Centralizes element lookups to prevent repeated queries and handle null safety.
    ========================================================================== */
 const UI = {
+    app: document.querySelector(".dashboard-app"),
     userFullName: document.getElementById("displayUserFullName"),
     userFirstName: document.getElementById("displayUserName"),
     userRole: document.getElementById("displayUserRole"),
     avatarInitial: document.getElementById("avatarInitial"),
-    moduleBanner: document.getElementById("moduleTypeBanner"),
-    greetingSub: document.getElementById("greetingSub"),
     brandRoleSubtitle: document.getElementById("brandRoleSubtitle"),
-    currentModuleLabel: document.getElementById("currentModuleLabel"),
+    roleIndicatorText: document.getElementById("roleIndicatorText"),
+    bannerBadge: document.getElementById("bannerBadge"),
+    moduleBannerText: document.getElementById("moduleBannerText"),
+    pillAccessLevel: document.getElementById("pillAccessLevel"),
+    greetingSub: document.getElementById("greetingSub"),
+    teamCardTitle: document.getElementById("teamCardTitle"),
+    teamCardSubtitle: document.getElementById("teamCardSubtitle"),
+    teamPanelTitle: document.getElementById("teamPanelTitle"),
+    teamPanelSubtitle: document.getElementById("teamPanelSubtitle"),
     teamContainer: document.getElementById("teamMemberListContainer"),
     modal: document.getElementById("infoModal"),
     modalHeading: document.getElementById("modalHeading"),
@@ -41,227 +44,209 @@ const UI = {
     activeDealsStat: document.getElementById("activeDealsStat")
 };
 
-
 /* ==========================================================================
-   3. ROLE-BASED MODULE BOOTSTRAP
-   Renders distinct workspaces for Admin vs. Worker (Sales/Operations).
+   3. ROLE BOOTSTRAP (AMAZON ENTERPRISE STYLING)
    ========================================================================== */
 function initDashboard() {
     populateUserProfile();
 
     if (isAdmin) {
-        configureAdminModule();
+        setupAdminConsole();
     } else {
-        configureWorkerModule();
+        setupStaffWorkspace();
     }
 }
 
 function populateUserProfile() {
-    const firstName = currentUser.name ? currentUser.name.split(" ")[0] : "User";
+    const firstName = currentUser.name ? currentUser.name.split(" ")[0] : "Associate";
     const initial = currentUser.name ? currentUser.name.charAt(0).toUpperCase() : "U";
 
     if (UI.userFullName) UI.userFullName.textContent = currentUser.name;
     if (UI.userFirstName) UI.userFirstName.textContent = firstName;
-    if (UI.userRole) UI.userRole.textContent = currentUser.role || (isAdmin ? "Administrator" : "Staff Specialist");
+    if (UI.userRole) UI.userRole.textContent = currentUser.role || (isAdmin ? "Executive Lead" : "Operations Specialist");
     if (UI.avatarInitial) UI.avatarInitial.textContent = initial;
 }
 
 /**
- * ADMIN MODULE
- * Full governance: viewing employee directory, security logs, and team audits.
+ * ADMIN CONSOLE MODE: Full governance, audit logs, employee directory management
  */
-function configureAdminModule() {
-    if (UI.moduleBanner) UI.moduleBanner.textContent = "Executive Management Console (Admin Module)";
-    if (UI.greetingSub) UI.greetingSub.textContent = "Full administrative controls: Employee directory, audit logs, and organizational telemetry.";
-    if (UI.brandRoleSubtitle) UI.brandRoleSubtitle.textContent = "ADMIN PORTAL";
-    if (UI.currentModuleLabel) UI.currentModuleLabel.textContent = "ADMIN CLEARANCE";
+function setupAdminConsole() {
+    if (UI.app) {
+        UI.app.classList.remove("staff-mode");
+        UI.app.classList.add("admin-mode");
+    }
 
-    // Display admin-exclusive controls
+    if (UI.brandRoleSubtitle) UI.brandRoleSubtitle.textContent = "ADMIN CONSOLE";
+    if (UI.roleIndicatorText) UI.roleIndicatorText.textContent = "ROOT CLEARANCE (ADMIN)";
+    if (UI.bannerBadge) UI.bannerBadge.textContent = "EXECUTIVE CONSOLE";
+    if (UI.moduleBannerText) UI.moduleBannerText.textContent = "Full administrative controls active: Personnel Master, Security Audit Trail, and Cross-Platform Telemetry.";
+    if (UI.pillAccessLevel) UI.pillAccessLevel.textContent = "Level 5 — Executive Administrator";
+    if (UI.greetingSub) UI.greetingSub.textContent = "Executive oversight view. Monitoring organizational throughput and audit streams.";
+
+    if (UI.teamCardTitle) UI.teamCardTitle.textContent = "Staff Master Roster";
+    if (UI.teamCardSubtitle) UI.teamCardSubtitle.textContent = "Click to inspect clearance credentials";
+    if (UI.teamPanelTitle) UI.teamPanelTitle.textContent = "Personnel Governance Directory";
+    if (UI.teamPanelSubtitle) UI.teamPanelSubtitle.textContent = "Click any staff member to view clearance info";
+
+    // Reveal admin-exclusive links and audit entries
     document.querySelectorAll(".admin-only").forEach(el => el.style.display = "");
-    // Hide worker-only workflows (e.g., individual cold call buttons)
-    document.querySelectorAll(".worker-only").forEach(el => el.style.display = "none");
 
     renderAdminTeam();
 }
 
 /**
- * WORKER / EMPLOYEE MODULE
- * Operational workspace: deals, client lists, calls, and daily tasks.
+ * USER / STAFF WORKSPACE MODE: Operational focus on leads, calls, deals, and accounts
  */
-function configureWorkerModule() {
-    if (UI.moduleBanner) UI.moduleBanner.textContent = "Operations & Sales Workspace (Staff Module)";
-    if (UI.greetingSub) UI.greetingSub.textContent = "Manage assigned enterprise accounts, update deal pipelines, and log outreach.";
-    if (UI.brandRoleSubtitle) UI.brandRoleSubtitle.textContent = "STAFF PORTAL";
-    if (UI.currentModuleLabel) UI.currentModuleLabel.textContent = "STAFF CLEARANCE";
+function setupStaffWorkspace() {
+    if (UI.app) {
+        UI.app.classList.remove("admin-mode");
+        UI.app.classList.add("staff-mode");
+    }
 
-    // Hide administrative tools from workers
+    if (UI.brandRoleSubtitle) UI.brandRoleSubtitle.textContent = "STAFF WORKSPACE";
+    if (UI.roleIndicatorText) UI.roleIndicatorText.textContent = "OPERATIONS SEAT (USER)";
+    if (UI.bannerBadge) UI.bannerBadge.textContent = "OPERATIONS SEAT";
+    if (UI.moduleBannerText) UI.moduleBannerText.textContent = "Standard Staff Seat: Managing enterprise customer deals, outreach records, and pipeline commitments.";
+    if (UI.pillAccessLevel) UI.pillAccessLevel.textContent = "Level 2 — Operations Seat";
+    if (UI.greetingSub) UI.greetingSub.textContent = "Operational dashboard active. Track active accounts and pipeline movements.";
+
+    if (UI.teamCardTitle) UI.teamCardTitle.textContent = "Colleagues On Shift";
+    if (UI.teamCardSubtitle) UI.teamCardSubtitle.textContent = "Internal operational seats online";
+    if (UI.teamPanelTitle) UI.teamPanelTitle.textContent = "Operations Colleague Status";
+    if (UI.teamPanelSubtitle) UI.teamPanelSubtitle.textContent = "Internal team members currently assigned";
+
+    // Hide admin controls from standard users
     document.querySelectorAll(".admin-only").forEach(el => el.style.display = "none");
-    // Ensure operational controls are visible
-    document.querySelectorAll(".worker-only").forEach(el => el.style.display = "");
 
     renderWorkerTeamSummary();
 }
 
-
 /* ==========================================================================
-   4. DATA RENDERING: STAFF & WORKERS DIRECTORY
+   4. DATA RENDERING
    ========================================================================== */
 function getStaffList() {
-    // Checks both current storage keys for employees
     const staff = localStorage.getItem("cp_staff_directory") || localStorage.getItem("cp_registered_users");
     return staff ? JSON.parse(staff) : [];
 }
 
-/**
- * Admin view: Detailed list with click-to-inspect security profiles
- */
 function renderAdminTeam() {
     if (!UI.teamContainer) return;
-
     const staff = getStaffList();
+
     if (staff.length === 0) {
-        UI.teamContainer.innerHTML = `<div style="padding:15px; font-size:11px; color:#64748b;">No registered staff accounts found.</div>`;
+        UI.teamContainer.innerHTML = `<div style="padding:10px; font-size:11px; color:#545b64;">No personnel registered in local database.</div>`;
         return;
     }
 
     UI.teamContainer.innerHTML = staff.map(member => {
-        const firstLetter = member.name ? member.name.charAt(0).toUpperCase() : "E";
-        const role = member.role || "Operations Associate";
-        const dept = member.department || "Operations";
-
+        const initial = member.name ? member.name.charAt(0).toUpperCase() : "E";
         return `
-      <div class="employee-row" onclick="inspectStaffMember('${escapeQuotes(member.name)}', '${escapeQuotes(member.email)}', '${escapeQuotes(role)}', '${escapeQuotes(dept)}')">
-        <div class="employee-avatar">${firstLetter}</div>
-        <div class="employee-info">
-          <div class="employee-name">${member.name}</div>
-          <div class="employee-role">${role} • ${dept}</div>
-        </div>
-        <div class="employee-login">
-          <div class="status"><span class="status-dot"></span> Active</div>
-        </div>
-      </div>
-    `;
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eaeded; cursor:pointer;"
+                 onclick="inspectStaffMember('${escapeQuotes(member.name)}', '${escapeQuotes(member.email)}', '${escapeQuotes(member.role || "Operations")}', '${escapeQuotes(member.department || "Client Services")}')">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <div style="width:26px; height:26px; background:#232f3e; color:#fff; border-radius:4px; font-size:10px; font-weight:800; display:flex; align-items:center; justify-content:center;">${initial}</div>
+                    <div>
+                        <div style="font-size:11px; font-weight:700; color:#0073bb;">${member.name}</div>
+                        <div style="font-size:9px; color:#545b64;">${member.email}</div>
+                    </div>
+                </div>
+                <div style="font-size:9px; color:#037f4c; font-weight:700;">● Active</div>
+            </div>
+        `;
     }).join("");
 }
 
-/**
- * Worker view: Lightweight status indicator without confidential records
- */
 function renderWorkerTeamSummary() {
     if (!UI.teamContainer) return;
-
     const staff = getStaffList();
+
     UI.teamContainer.innerHTML = `
-    <div style="padding: 12px 6px;">
-      <div style="font-size: 11px; font-weight: 700; color: #0f172a; margin-bottom: 4px;">Department Colleagues</div>
-      <div style="font-size: 10px; color: #64748b; line-height: 1.5;">
-        ${staff.length} team members currently assigned to client operations.
-      </div>
-    </div>
-  `;
+        <div style="padding:10px; background:#fafbfc; border:1px solid #eaeded; border-radius:6px;">
+            <div style="font-size:11px; font-weight:700; color:#16191f; margin-bottom:4px;">Operations Duty Roster</div>
+            <div style="font-size:11px; color:#545b64; line-height:1.5;">
+                There are currently <strong>${staff.length} team members</strong> assigned to operational accounts. For confidential personnel clearances, contact an authorized executive administrator.
+            </div>
+        </div>
+    `;
 }
 
 function inspectStaffMember(name, email, role, dept) {
     openModal(
-        `Staff Credential: ${name}`,
-        `Full Name: ${name}\nCorporate Email: ${email}\nAssigned Role: ${role}\nDepartment: ${dept}\nSecurity Perimeter: ClientPilot Internal Seat`
+        `Staff Identity Record: ${name}`,
+        `Employee Name: ${name}\nCorporate Email: ${email}\nAssigned Designation: ${role}\nDepartment: ${dept}\nDomain Clearance: @clientpilot.com Verified`
     );
 }
 
-
 /* ==========================================================================
-   5. NAVIGATION DISPATCHERS (DIFFERENTIATED BY ROLE)
+   5. NAVIGATION & MODALS
    ========================================================================== */
 function setActiveNav(buttonId) {
-    document.querySelectorAll(".nav-item").forEach(item => item.classList.remove("active"));
+    document.querySelectorAll(".sub-nav-item").forEach(item => item.classList.remove("active"));
     const activeBtn = document.getElementById(buttonId);
     if (activeBtn) activeBtn.classList.add("active");
 }
 
 function showOverviewNav() {
     setActiveNav("nav-overview");
-
     if (isAdmin) {
         openModal(
-            "Executive Dashboard Overview",
-            `Session Identity: ${currentUser.name}\nDesignation: ${currentUser.role}\nAccess Tier: Enterprise Root\nPlatform Status: All enterprise microservices operational.`
+            "Executive Console Home",
+            `Identity: ${currentUser.name}\nDesignation: ${currentUser.role}\nAccess Tier: Enterprise Root\nConsole Status: All microservices operational.`
         );
     } else {
         openModal(
-            "Worker Desk Overview",
-            `Staff Specialist: ${currentUser.name}\nAssigned Department: Operations / Client Relations\nTarget Pipeline: ₹42.8 Lakh\nDatabase: LocalStorage Active Session.`
+            "Staff Workspace Home",
+            `Specialist: ${currentUser.name}\nRole: ${currentUser.role || "Operations Specialist"}\nAccess: Operational CRM Records\nLocal Target: ₹42.8 Lakh.`
         );
     }
 }
 
 function showContactsNav() {
     setActiveNav("nav-contacts");
-
-    const directoryContent =
-        "• Ananya Rao — Apex Core Systems (VP Tech)\n" +
-        "• Rohan Mehta — FinTech Dynamics (Operations Lead)\n" +
-        "• Vikram Nair — MediCore Health (Procurement Specialist)\n" +
-        "• Sunita Verma — GlobalTech Infrastructure (Enterprise Director)\n\n" +
-        "Status: Verified enterprise contacts in active pipeline.";
-
-    openModal("Client Directory (External Customers)", directoryContent);
+    openModal(
+        "Client Accounts Master",
+        "• Ananya Rao — Apex Core Systems (VP Technology)\n• Rohan Mehta — FinTech Dynamics (Lead Operations)\n• Vikram Nair — MediCore Health (Procurement Specialist)\n• Sunita Verma — GlobalTech Infrastructure (Enterprise Director)"
+    );
 }
 
 function showDealsNav() {
     setActiveNav("nav-deals");
-
     const storedDeals = JSON.parse(localStorage.getItem("cp_custom_deals")) || [];
-    let dealReport =
-        "Standard Pipeline Overview:\n" +
-        "• Inbound Lead Evaluation — ₹12.4 Lakh\n" +
-        "• Technical Architecture Review — ₹8.6 Lakh\n" +
-        "• Commercial Proposal Under Review — ₹14.2 Lakh\n" +
-        "• Closed Won (Executed) — ₹18.5 Lakh\n";
-
+    let report = "Standard Commercial Pipeline:\n• Inbound Leads — ₹12.4L\n• Technical Review — ₹8.6L\n• Proposal Stage — ₹14.2L\n• Closed Won — ₹18.5L\n";
     if (storedDeals.length > 0) {
-        dealReport += "\nRecent Team Submissions:\n" +
-            storedDeals.map(d => `• ${d.name} (${d.client}) — ₹${d.value} Lakh`).join("\n");
+        report += "\nUser Submitted Deals:\n" + storedDeals.map(d => `• ${d.name} (${d.client}) — ₹${d.value}L`).join("\n");
     }
-
-    openModal("Corporate Deals Pipeline", dealReport);
+    openModal("Corporate Deals Pipeline", report);
 }
 
 function showScheduleNav() {
     setActiveNav("nav-schedule");
-
     const schedule = isAdmin
-        ? "• 09:30 AM — Executive Council Quarterly Strategy\n• 01:00 PM — Operations Security Audit Review\n• 04:30 PM — Cross-Functional Lead Sync"
-        : "• 10:30 AM — MediCore Demo (Room 3)\n• 02:00 PM — TechNova Scope Alignment\n• 05:00 PM — Lead Activity Catchup";
-
-    openModal("Today's Schedule & Commitments", schedule);
+        ? "• 09:30 AM — Executive Council Strategy\n• 01:00 PM — Operations Security Audit\n• 04:30 PM — Enterprise Governance Review"
+        : "• 10:30 AM — Client Demo (Room 3)\n• 02:00 PM — Scope Realignment Call\n• 05:00 PM — Daily CRM Entry Reconciliation";
+    openModal("Scheduled Operational Tasks", schedule);
 }
 
 function showEmployeesNav() {
     if (!isAdmin) {
-        openModal("Access Restricted", "The Employee Master Directory is reserved for System Administrators.");
+        openModal("Access Denied", "The Personnel Master Directory requires Executive Clearance.");
         return;
     }
-
     setActiveNav("nav-employees");
     const staff = getStaffList();
-    const summary = staff.map(s => `• ${s.name} (${s.email}) — ${s.role || "Operations"}`).join("\n");
-
-    openModal("Authorized Personnel Directory (Admin Module)", `Active Headcount: ${staff.length}\n\n${summary}`);
+    const list = staff.map(s => `• ${s.name} (${s.email}) — ${s.role || "Operations"}`).join("\n");
+    openModal("Executive Personnel Directory", `Registered Count: ${staff.length}\n\n${list}`);
 }
 
 function showActivityNav() {
     if (!isAdmin) {
-        openModal("Access Restricted", "Detailed telemetry audit logging is reserved for the Admin Module.");
+        openModal("Access Denied", "System telemetry audit streams require Executive Clearance.");
         return;
     }
-
     setActiveNav("nav-activity");
     openModal(
-        "System Activity & Audit Log (Admin Only)",
-        "• 10:15 AM — Staff updated Deal Stage (Apex Core Systems)\n" +
-        "• 11:20 AM — Staff logged Client Interaction via Phone\n" +
-        "• 01:30 PM — Automated LocalStorage database sync completed\n" +
-        "• 03:45 PM — Administrative credential verified (Elena Rostova)"
+        "System Audit Stream (Root Telemetry)",
+        "• 10:15 IST — Staff updated deal stage for Apex Core Systems\n• 11:20 IST — Staff logged client interaction via phone\n• 12:05 IST — Rohit Verma verified database node sync\n• 01:30 IST — Automated session cache refreshed"
     );
 }
 
@@ -269,76 +254,61 @@ function handleTeamCardClick() {
     if (isAdmin) {
         showEmployeesNav();
     } else {
-        openModal("Team Overview", "Colleague status: 8 of 12 personnel currently logged in.");
+        openModal("Colleague Overview", "Active Personnel Status: 8 of 12 internal team members logged into seat.");
     }
 }
 
+function handleSearch() {
+    const query = document.getElementById("globalSearchInput").value.trim();
+    if (!query) return;
+    openModal("Console Search Query", `Dispatched search query: "${query}" across client indices and local logs.`);
+}
 
 /* ==========================================================================
-   6. OPERATIONAL PIPELINE ACTIONS (WORKERS & ADMINS)
+   6. USER ACTIONS
    ========================================================================== */
 function openNewDealModal() {
-    const clientName = prompt("Enter Corporate Client Name:");
-    if (!clientName || !clientName.trim()) return;
-
-    const dealValue = prompt("Enter Contract Value in Lakhs (₹):", "5.0");
-    if (!dealValue || !dealValue.trim()) return;
+    const client = prompt("Enter Corporate Client Name:");
+    if (!client || !client.trim()) return;
+    const val = prompt("Enter Contract Value in Lakhs (₹):", "5.0");
+    if (!val || !val.trim()) return;
 
     const storedDeals = JSON.parse(localStorage.getItem("cp_custom_deals")) || [];
-    storedDeals.push({
-        name: `${clientName.trim()} Agreement`,
-        client: clientName.trim(),
-        value: dealValue.trim()
-    });
-
+    storedDeals.push({ name: `${client.trim()} Contract`, client: client.trim(), value: val.trim() });
     localStorage.setItem("cp_custom_deals", JSON.stringify(storedDeals));
 
-    const totalCount = 31 + storedDeals.length;
-    if (UI.summaryDealCount) UI.summaryDealCount.textContent = totalCount;
-    if (UI.activeDealsStat) UI.activeDealsStat.textContent = totalCount;
+    const total = 31 + storedDeals.length;
+    if (UI.summaryDealCount) UI.summaryDealCount.textContent = total;
+    if (UI.activeDealsStat) UI.activeDealsStat.textContent = total;
 
-    openModal("Deal Logged", `Successfully registered ${clientName.trim()} deal valued at ₹${dealValue}L.`);
+    openModal("Deal Registered", `Successfully logged ${client.trim()} contract at ₹${val}L.`);
 }
 
 function logCall() {
-    const notes = prompt("Enter client communication notes:");
-    if (notes && notes.trim()) {
-        openModal("Outreach Synchronized", `Logged interaction:\n"${notes.trim()}"\n\nAppended to client history.`);
-    }
+    const note = prompt("Enter client communication record:");
+    if (note && note.trim()) openModal("Call Logged", `Interaction saved:\n"${note.trim()}"`);
 }
 
 function addNote() {
     const note = prompt("Enter workspace reference note:");
-    if (note && note.trim()) {
-        openModal("Note Saved", `Note recorded:\n"${note.trim()}"`);
-    }
+    if (note && note.trim()) openModal("Note Appended", `Saved reference note:\n"${note.trim()}"`);
 }
 
 function scheduleFollowUp() {
-    openModal("Follow-Up Queued", "Follow-up task dispatched. Reminder synced to calendar.");
+    openModal("Escalation Dispatched", "Escalation ticket queued and reminder synchronized.");
 }
 
 function showClient(name, company, role, health, status) {
-    openModal(
-        "Client Account Profile",
-        `Contact Representative: ${name}\nClient Enterprise: ${company}\nDesignation: ${role}\nRelationship Health Score: ${health}\nCurrent Status: ${status}`
-    );
+    openModal("Account Dossier", `Contact: ${name}\nClient Enterprise: ${company}\nDesignation: ${role}\nRelationship Health: ${health}\nCurrent Status: ${status}`);
 }
 
 function showCurrentUser() {
-    openModal(
-        "Current Session Details",
-        `Name: ${currentUser.name}\nEmail: ${currentUser.email}\nAssigned Role: ${currentUser.role || "Staff"}\nSystem Module: ${isAdmin ? "Executive Console" : "Operations Workspace"}`
-    );
+    openModal("Active Session Clearance", `User: ${currentUser.name}\nEmail: ${currentUser.email}\nAssigned Role: ${currentUser.role || "Staff"}\nModule Tier: ${isAdmin ? "Executive Admin Console (Root)" : "Staff Operations Workspace"}`);
 }
 
-
-/* ==========================================================================
-   7. MODAL UTILITIES & TERMINATION
-   ========================================================================== */
-function openModal(title, content) {
+function openModal(title, text) {
     if (UI.modalHeading) UI.modalHeading.textContent = title;
-    if (UI.modalContent) UI.modalContent.textContent = content;
+    if (UI.modalContent) UI.modalContent.textContent = text;
     if (UI.modal) UI.modal.style.display = "flex";
 }
 
@@ -356,5 +326,4 @@ function escapeQuotes(str) {
     return str ? str.replace(/'/g, "\\'") : "";
 }
 
-// Start dashboard logic once the script loads
 initDashboard();
