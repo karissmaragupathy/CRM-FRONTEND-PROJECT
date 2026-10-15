@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClientPilot CRM - Authentication</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #064e3b, #0f172a);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .top-bar {
+            width: 100%;
+            max-width: 950px;
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 15px;
+        }
+
+        .admin-link-btn {
+            background-color: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(52, 211, 153, 0.4);
+            color: #ecfdf5;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .admin-link-btn:hover {
+            background-color: rgba(52, 211, 153, 0.2);
+            border-color: #34d399;
+        }
+
+        .main-box {
+            width: 100%;
+            max-width: 950px;
+            display: flex;
+            flex-direction: row;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.45);
+        }
+
+        .left-panel {
+            flex: 1;
+            background: rgba(6, 78, 59, 0.45);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            color: #ffffff;
+            border: 1px solid rgba(52, 211, 153, 0.25);
+        }
+
+        .badge {
+            display: inline-block;
+            background-color: rgba(52, 211, 153, 0.25);
+            color: #6ee7b7;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            letter-spacing: 1px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .title {
+            font-size: 38px;
+            font-weight: bold;
+            line-height: 1.2;
+            color: #f0fdf4;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #a7f3d0;
+            margin-top: 15px;
+            line-height: 1.6;
+        }
+
+        .footer-tag {
+            font-size: 11px;
+            color: #cbd5e1;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            padding-top: 15px;
+        }
+
+        .right-panel {
+            flex: 1.3;
+            background-color: #ffffff;
+            padding: 35px;
+            display: flex;
+            gap: 20px;
+            position: relative;
+        }
+
+        .form-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-section h3 {
+            color: #064e3b;
+            margin-bottom: 5px;
+            font-size: 18px;
+        }
+
+        .form-section p {
+            color: #64748b;
+            font-size: 11px;
+            margin-bottom: 15px;
+        }
+
+        .input-group {
+            margin-bottom: 12px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 11px;
+            color: #1e293b;
+            margin-bottom: 4px;
+            font-weight: bold;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 9px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #059669;
+            box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            background-color: #059669;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            cursor: pointer;
+            margin-top: 5px;
+            transition: 0.2s;
+        }
+
+        .submit-btn:hover {
+            background-color: #047857;
+        }
+
+        .submit-btn.dark {
+            background-color: #0f172a;
+        }
+
+        .submit-btn.dark:hover {
+            background-color: #1e293b;
+        }
+
+        .divider {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .divider-line {
+            width: 1px;
+            height: 100%;
+            background-color: #e2e8f0;
+        }
+
+        .error-msg {
+            color: #dc2626;
+            font-size: 11px;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .success-msg {
+            color: #059669;
+            font-size: 11px;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.65);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-box {
+            background: white;
+            width: 380px;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        .quick-select-box {
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .quick-title {
+            font-size: 11px;
+            color: #166534;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .fast-btn-group {
+            display: flex;
+            gap: 6px;
+        }
+
+        .fast-chip {
+            flex: 1;
+            padding: 5px 4px;
+            background-color: #ffffff;
+            border: 1px solid #86efac;
+            border-radius: 6px;
+            font-size: 11px;
+            color: #065f46;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            transition: 0.2s;
+        }
+
+        .fast-chip:hover {
+            background-color: #dcfce7;
+            border-color: #059669;
+        }
+
+        @media (max-width: 768px) {
+            .main-box {
+                flex-direction: column;
+            }
+
+            .right-panel {
+                flex-direction: column;
+            }
+
+            .divider {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="top-bar">
+        <button class="admin-link-btn" onclick="openAdminModal()">🔒 Executive Portal Access</button>
+    </div>
+
+    <div class="main-box">
+        <div class="left-panel">
+            <div>
+                <span class="badge">CRM WORKSPACE</span>
+                <h1 class="title">Client<br>Pilot</h1>
+                <p class="subtitle">Operational CRM with complete role authorization, local persistence, and deal
+                    tracking.</p>
+            </div>
+            <div class="footer-tag">
+                Allowed Domain: <b>@clientpilot.com</b>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <!-- User Login -->
+            <div class="form-section">
+                <h3>Log In</h3>
+                <p>Enter your workspace</p>
+                <form onsubmit="handleUserLogin(event)">
+                    <div class="input-group">
+                        <label>Corporate Email</label>
+                        <input type="email" id="loginEmail" placeholder="name@clientpilot.com" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Password</label>
+                        <input type="password" id="loginPass" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="submit-btn">Log In</button>
+                    <div class="error-msg" id="loginError">Invalid credentials or domain!</div>
+                </form>
+            </div>
+
+            <div class="divider">
+                <div class="divider-line"></div>
+                <span style="padding: 5px 0;">or</span>
+                <div class="divider-line"></div>
+            </div>
+
+            <!-- User Signup -->
+            <div class="form-section">
+                <h3>Create Account</h3>
+                <p>New team registration</p>
+                <form onsubmit="handleUserSignup(event)">
+                    <div class="input-group">
+                        <label>Full Name</label>
+                        <input type="text" id="signupName" placeholder="Alex Carter" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Corporate Email</label>
+                        <input type="email" id="signupEmail" placeholder="alex@clientpilot.com" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Password</label>
+                        <input type="password" id="signupPass" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="submit-btn dark">Create Account</button>
+                    <div class="error-msg" id="signupError">Access restricted to @clientpilot.com only!</div>
+                    <div class="success-msg" id="signupSuccess">Account created! You can now log in.</div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Gateway Modal -->
+    <div class="modal-overlay" id="adminModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h4 style="color:#064e3b;">Executive Gateway (Admin Module)</h4>
+                <button class="close-btn" onclick="closeAdminModal()">✕</button>
+            </div>
+
+            <div class="quick-select-box">
+                <div class="quick-title">Quick Select Default Admin:</div>
+                <div class="fast-btn-group">
+                    <button type="button" class="fast-chip"
+                        onclick="quickFillAdmin('elena.r@clientpilot.com')">Elena</button>
+                    <button type="button" class="fast-chip"
+                        onclick="quickFillAdmin('marcus.v@clientpilot.com')">Marcus</button>
+                    <button type="button" class="fast-chip"
+                        onclick="quickFillAdmin('sarah.j@clientpilot.com')">Sarah</button>
+                </div>
+            </div>
+
+            <form onsubmit="handleAdminLogin(event)">
+                <div class="input-group">
+                    <label>Admin Corporate Email</label>
+                    <input type="email" id="adminEmail" placeholder="admin@clientpilot.com" required>
+                </div>
+                <div class="input-group">
+                    <label>Admin Passkey</label>
+                    <input type="password" id="adminPass" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="submit-btn dark">Enter Admin Workspace</button>
+                <div class="error-msg" id="adminError">Invalid admin clearance or incorrect passkey!</div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const AUTHORIZED_ADMINS = {
+            "elena.r@clientpilot.com": "Elena Rostova (Executive Admin)",
+            "marcus.v@clientpilot.com": "Marcus Vance (Operations Lead)",
+            "sarah.j@clientpilot.com": "Sarah Jenkins (Security Admin)"
+        };
+        const ADMIN_DEFAULT_PASS = "admin123";
+
+        function initStorage() {
+            if (!localStorage.getItem('cp_registered_users')) {
+                const initialUsers = [
+                    { name: "Priya Sharma", email: "priya.s@clientpilot.com", pass: "user123", role: "Sales Manager" }
+                ];
+                localStorage.setItem('cp_registered_users', JSON.stringify(initialUsers));
+            }
+        }
+        initStorage();
+
+        function openAdminModal() {
+            document.getElementById('adminModal').style.display = 'flex';
+        }
+
+        function closeAdminModal() {
+            document.getElementById('adminModal').style.display = 'none';
+            document.getElementById('adminError').style.display = 'none';
+        }
+
+        function quickFillAdmin(email) {
+            document.getElementById('adminEmail').value = email;
+            document.getElementById('adminPass').value = ADMIN_DEFAULT_PASS;
+            document.getElementById('adminError').style.display = 'none';
+        }
+
+        function handleUserLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+            const pass = document.getElementById('loginPass').value;
+            const errorMsg = document.getElementById('loginError');
+
+            if (!email.endsWith('@clientpilot.com')) {
+                errorMsg.textContent = "Access restricted to @clientpilot.com only!";
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem('cp_registered_users')) || [];
+            const matchedUser = users.find(u => u.email === email && u.pass === pass);
+
+            if (matchedUser) {
+                errorMsg.style.display = 'none';
+                localStorage.setItem('cp_current_user', JSON.stringify({
+                    name: matchedUser.name,
+                    role: matchedUser.role || 'Sales Executive',
+                    email: matchedUser.email
+                }));
+                window.location.href = 'dashboard.html';
+            } else {
+                errorMsg.textContent = "Invalid email or password. Sign up first if new.";
+                errorMsg.style.display = 'block';
+            }
+        }
+
+        function handleUserSignup(e) {
+            e.preventDefault();
+            const name = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim().toLowerCase();
+            const pass = document.getElementById('signupPass').value;
+            const errorMsg = document.getElementById('signupError');
+            const successMsg = document.getElementById('signupSuccess');
+
+            if (!email.endsWith('@clientpilot.com')) {
+                errorMsg.textContent = "Access restricted to @clientpilot.com only!";
+                errorMsg.style.display = 'block';
+                successMsg.style.display = 'none';
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem('cp_registered_users')) || [];
+            if (users.some(u => u.email === email)) {
+                errorMsg.textContent = "User already registered! Please log in.";
+                errorMsg.style.display = 'block';
+                successMsg.style.display = 'none';
+                return;
+            }
+
+            users.push({ name, email, pass, role: "Sales Executive" });
+            localStorage.setItem('cp_registered_users', JSON.stringify(users));
+
+            errorMsg.style.display = 'none';
+            successMsg.style.display = 'block';
+            document.getElementById('signupName').value = '';
+            document.getElementById('signupEmail').value = '';
+            document.getElementById('signupPass').value = '';
+        }
+
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('adminEmail').value.trim().toLowerCase();
+            const pass = document.getElementById('adminPass').value;
+            const errorMsg = document.getElementById('adminError');
+
+            if (AUTHORIZED_ADMINS[email] && pass === ADMIN_DEFAULT_PASS) {
+                localStorage.setItem('cp_current_user', JSON.stringify({
+                    name: AUTHORIZED_ADMINS[email],
+                    role: 'Administrator',
+                    email: email
+                }));
+                window.location.href = 'dashboard.html';
+            } else {
+                errorMsg.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+
+</html>

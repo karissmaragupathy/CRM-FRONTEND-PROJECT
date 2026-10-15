@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Keystone CRM — Approvals</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <div id="shell"></div>
+
+    <script src="app.js"></script>
+    <script>
+        const session = requireAuth("admin");
+
+        function render() {
+            const users = getUsers();
+            const pending = users.filter(u => u.status === "pending");
+            const decided = users.filter(u => u.status !== "pending");
+
+            const pendingRows = pending.length
+                ? pending.map(u => `
+        <tr>
+          <td>${u.name}</td>
+          <td>${u.email}</td>
+          <td>${u.company}</td>
+          <td>
+            <button class="btn small accent" onclick="decide('${u.id}','approved')">Approve</button>
+            <button class="btn small danger" onclick="decide('${u.id}','denied')">Deny</button>
+          </td>
+        </tr>`).join("")
+                : `<tr><td colspan="4" class="empty">No pending requests right now.</td></tr>`;
+
+            const decidedRows = decided.map(u => `
+      <tr>
+        <td>${u.name}</td>
+        <td>${u.email}</td>
+        <td>${u.company}</td>
+        <td><span class="badge ${u.status}">${u.status}</span></td>
+      </tr>`).join("");
+
+            document.getElementById("shell").innerHTML = `
+      ${renderShellStart("admin.html", session)}
+      <div class="page-head">
+        <div>
+          <h1>Approvals</h1>
+          <p>Review signup requests from outside the verified company domain.</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Pending requests</h3>
+        <table>
+          <thead><tr><th>Name</th><th>Email</th><th>Company</th><th>Action</th></tr></thead>
+          <tbody>${pendingRows}</tbody>
+        </table>
+      </div>
+
+      <div class="panel">
+        <h3>Past decisions</h3>
+        <table>
+          <thead><tr><th>Name</th><th>Email</th><th>Company</th><th>Status</th></tr></thead>
+          <tbody>${decidedRows || `<tr><td colspan="4" class="empty">Nothing decided yet.</td></tr>`}</tbody>
+        </table>
+      </div>
+      ${SHELL_END}
+    `;
+        }
+
+        function decide(userId, status) {
+            const users = getUsers();
+            const u = users.find(x => x.id === userId);
+            if (u) u.status = status;
+            setUsers(users);
+            render();
+        }
+
+        render();
+    </script>
+</body>
+
+</html>

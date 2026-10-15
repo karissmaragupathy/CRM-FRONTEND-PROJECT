@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aether Ops | Internal Deal Management</title>
+    <style>
+        :root {
+            --bg: #06090e;
+            --card-bg: #0f172a;
+            --border: #1e293b;
+            --accent: #2563eb;
+            --text: #f8fafc;
+            --muted: #94a3af;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .admin-card {
+            width: 100%;
+            max-width: 850px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+        }
+
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h1 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        p.sub {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        /* Admin Login Box */
+        .login-box {
+            max-width: 380px;
+            margin: 40px auto;
+            text-align: center;
+        }
+
+        input {
+            width: 100%;
+            padding: 11px 14px;
+            background: #06090e;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 13px;
+            margin: 8px 0 16px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+        }
+
+        .btn-admin {
+            width: 100%;
+            padding: 11px;
+            background: var(--accent);
+            color: #fff;
+            font-weight: 600;
+            font-size: 13px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        /* Request Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px 10px;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--muted);
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 14px 10px;
+            border-bottom: 1px solid #1e293b;
+        }
+
+        .status-badge {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        .status-pending {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .status-approved {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-denied {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-act {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-app {
+            background: var(--success);
+            color: #06090e;
+            margin-right: 6px;
+        }
+
+        .btn-den {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="admin-card">
+
+        <!-- Step 1: Admin Gatekeeper (Password: admin123) -->
+        <div id="adminLockScreen" class="login-box">
+            <span style="font-size:11px; text-transform:uppercase; color:#60a5fa; font-weight:700;">Internal Operator
+                Access</span>
+            <h1 style="margin: 8px 0 16px;">Sales & Deal Admin</h1>
+
+            <form id="adminAuthForm">
+                <input type="password" id="adminSecretKey" placeholder="Enter Admin Secret Passkey" required>
+                <button type="submit" class="btn-admin">Unlock Admin Console</button>
+            </form>
+            <p style="font-size: 11px; color: var(--muted); margin-top: 14px;">Demo key: <code>admin123</code></p>
+        </div>
+
+        <!-- Step 2: The Actual Admin Console -->
+        <div id="adminConsole" class="hidden">
+            <div class="top-header">
+                <div>
+                    <h1>Deal Review & Approval Queue</h1>
+                    <p class="sub">Verify incoming registration requests against signed Master Services Agreements
+                        (MSAs).</p>
+                </div>
+                <button class="btn-act" style="background:#1e293b; color:#fff;" onclick="location.reload()">Lock
+                    Console</button>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Company</th>
+                        <th>Work Email</th>
+                        <th>Current Status</th>
+                        <th>Admin Decision</th>
+                    </tr>
+                </thead>
+                <tbody id="queueBody"></tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <script>
+        const adminLockScreen = document.getElementById("adminLockScreen");
+        const adminConsole = document.getElementById("adminConsole");
+        const queueBody = document.getElementById("queueBody");
+
+        // Check passkey
+        document.getElementById("adminAuthForm").addEventListener("submit", (e) => {
+            e.preventDefault();
+            const enteredKey = document.getElementById("adminSecretKey").value;
+
+            if (enteredKey === "admin123") {
+                adminLockScreen.classList.add("hidden");
+                adminConsole.classList.remove("hidden");
+                renderQueue();
+            } else {
+                alert("Invalid Admin Key!");
+            }
+        });
+
+        function renderQueue() {
+            const users = JSON.parse(localStorage.getItem("crm_access_users")) || [];
+            queueBody.innerHTML = "";
+
+            if (users.length === 0) {
+                queueBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--muted)">No accounts found in system.</td></tr>`;
+                return;
+            }
+
+            users.forEach((u, index) => {
+                const tr = document.createElement("tr");
+
+                let badgeClass = "status-pending";
+                if (u.status === "APPROVED") badgeClass = "status-approved";
+                if (u.status === "DENIED") badgeClass = "status-denied";
+
+                tr.innerHTML = `
+          <td><strong>${u.company}</strong></td>
+          <td>${u.email}</td>
+          <td><span class="status-badge ${badgeClass}">${u.status}</span></td>
+          <td>
+            ${u.status === 'PENDING' ? `
+              <button class="btn-act btn-app" onclick="setDecision(${index}, 'APPROVED')">Approve Deal</button>
+              <button class="btn-act btn-den" onclick="setDecision(${index}, 'DENIED')">Deny</button>
+            ` : `<span style="color:var(--muted); font-size:12px;">Decision Logged</span>`}
+          </td>
+        `;
+                queueBody.appendChild(tr);
+            });
+        }
+
+        function setDecision(index, newStatus) {
+            const users = JSON.parse(localStorage.getItem("crm_access_users")) || [];
+            users[index].status = newStatus;
+            localStorage.setItem("crm_access_users", JSON.stringify(users));
+            renderQueue();
+        }
+    </script>
+</body>
+
+</html>

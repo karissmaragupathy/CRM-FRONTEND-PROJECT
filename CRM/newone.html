@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aether Cloud Ops | Enterprise Portal</title>
+    <style>
+        :root {
+            --bg: #090d16;
+            --card-bg: #111827;
+            --card-inner: #161f30;
+            --border: #1f293d;
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
+            --text: #f3f4f6;
+            --muted: #94a3af;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            transition: max-width 0.3s ease;
+        }
+
+        .container.wide-mode {
+            max-width: 820px;
+        }
+
+        /* Navigation Bar */
+        .nav-bar {
+            display: flex;
+            background: #06090e;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 4px;
+            margin-bottom: 24px;
+            gap: 4px;
+        }
+
+        .nav-btn {
+            flex: 1;
+            padding: 8px;
+            background: transparent;
+            border: none;
+            color: var(--muted);
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .nav-btn.active {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        h2 {
+            font-size: 20px;
+            margin-bottom: 6px;
+        }
+
+        p.sub {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 18px;
+            line-height: 1.4;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px 12px;
+            background: #06090e;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 13px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 11px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: var(--accent-hover);
+        }
+
+        .alert {
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            margin-top: 12px;
+            display: none;
+            line-height: 1.4;
+        }
+
+        .alert-err {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid var(--danger);
+            color: #fca5a5;
+        }
+
+        .alert-suc {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid var(--success);
+            color: #6ee7b7;
+        }
+
+        .alert-warn {
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid var(--warning);
+            color: #fcd34d;
+        }
+
+        /* Admin Table Styling */
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 13px;
+        }
+
+        .admin-table th {
+            text-align: left;
+            padding: 10px;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--muted);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .admin-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #1c273d;
+        }
+
+        .status-pill {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .pill-pending {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--warning);
+        }
+
+        .pill-approved {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+        }
+
+        .pill-denied {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+        }
+
+        .btn-action {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-approve {
+            background: var(--success);
+            color: #090d16;
+            margin-right: 5px;
+        }
+
+        .btn-deny {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        /* Dashboard UI */
+        .dash-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .metric-card {
+            background: var(--card-inner);
+            border: 1px solid var(--border);
+            padding: 16px;
+            border-radius: 8px;
+        }
+
+        .metric-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+
+        .metric-val {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="mainContainer" class="container">
+
+        <!-- 3-Way Top Navigation -->
+        <div id="navBar" class="nav-bar">
+            <button id="btnNavLogin" class="nav-btn active" onclick="switchTab('login')">1. User Login</button>
+            <button id="btnNavSignup" class="nav-btn" onclick="switchTab('signup')">2. Request Sign-Up</button>
+            <button id="btnNavAdmin" class="nav-btn" onclick="switchTab('admin')">3. Admin Approval</button>
+        </div>
+
+        <!-- 1. USER LOGIN VIEW -->
+        <div id="viewLogin">
+            <h2>Client Workspace Login</h2>
+            <p class="sub">Log in to view active cloud infrastructure and sprint deliverables.</p>
+
+            <form id="formLogin">
+                <div class="form-group">
+                    <label>Corporate Domain Email</label>
+                    <input type="email" id="logEmail" placeholder="cto@nexusbank.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="logPass" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn">Sign In to Workspace</button>
+                <div id="logAlert" class="alert"></div>
+            </form>
+        </div>
+
+        <!-- 2. USER SIGN-UP VIEW (REQUEST ACCESS) -->
+        <div id="viewSignup" class="hidden">
+            <h2>Request Enterprise Account</h2>
+            <p class="sub">Submit your organization details. Accounts are verified against signed contracts.</p>
+
+            <form id="formSignup">
+                <div class="form-group">
+                    <label>Company / Organization Name</label>
+                    <input type="text" id="regCompany" placeholder="Nexus Financial Bank" required>
+                </div>
+                <div class="form-group">
+                    <label>Corporate Domain Email</label>
+                    <input type="email" id="regEmail" placeholder="cto@nexusbank.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Create Password</label>
+                    <input type="password" id="regPass" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn">Submit Request</button>
+                <div id="regAlert" class="alert"></div>
+            </form>
+        </div>
+
+        <!-- 3. ADMIN PANEL (APPROVE / DENY DEALS) -->
+        <div id="viewAdmin" class="hidden">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <h2>Executive Admin Panel</h2>
+                    <p class="sub" style="margin-bottom:0">Review enterprise registrations against signed contracts.</p>
+                </div>
+                <span
+                    style="font-size:11px; background:#161f30; padding:4px 8px; border-radius:4px; border:1px solid var(--border)">
+                    Role: Account Director
+                </span>
+            </div>
+
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Company</th>
+                        <th>Email</th>
+                        <th>Contract Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="adminTableBody">
+                    <!-- Populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 4. APPROVED CLIENT DASHBOARD (WHAT THEY SEE AFTER LOGIN) -->
+        <div id="viewDashboard" class="hidden">
+            <div class="dash-header">
+                <div>
+                    <span style="font-size:11px; text-transform:uppercase; color:#60a5fa; font-weight:700;">Client
+                        Workspace</span>
+                    <h2 id="dashCompany" style="margin-top:2px;">Company Name</h2>
+                </div>
+                <span class="status-pill pill-approved" style="padding: 4px 10px;">● SOW Active</span>
+            </div>
+
+            <div class="metric-grid">
+                <div class="metric-card">
+                    <div class="metric-title">Account Status</div>
+                    <div class="metric-val" style="color:var(--success)">Approved</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Infrastructure Health</div>
+                    <div class="metric-val" style="color:#60a5fa">99.8%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Assigned Fleet</div>
+                    <div class="metric-val">AWS EKS Cluster</div>
+                </div>
+            </div>
+
+            <button class="btn" style="background: transparent; border: 1px solid var(--border); color: var(--muted);"
+                onclick="doLogout()">
+                Log Out
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        // Initial Seed of Users in LocalStorage
+        const defaultUsers = [
+            { company: "FinTech Core Ltd", email: "ops@fintechcore.io", pass: "pass123", status: "APPROVED" },
+            { company: "Vanguard Tech", email: "tech@vanguard.io", pass: "pass123", status: "PENDING" }
+        ];
+
+        if (!localStorage.getItem("crm_access_users")) {
+            localStorage.setItem("crm_access_users", JSON.stringify(defaultUsers));
+        }
+
+        function getUsers() {
+            return JSON.parse(localStorage.getItem("crm_access_users"));
+        }
+
+        function saveUsers(users) {
+            localStorage.setItem("crm_access_users", JSON.stringify(users));
+        }
+
+        // Tab Switching
+        function switchTab(tab) {
+            document.getElementById("logAlert").style.display = "none";
+            document.getElementById("regAlert").style.display = "none";
+
+            document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+            document.getElementById("viewLogin").classList.add("hidden");
+            document.getElementById("viewSignup").classList.add("hidden");
+            document.getElementById("viewAdmin").classList.add("hidden");
+
+            const mainContainer = document.getElementById("mainContainer");
+
+            if (tab === 'login') {
+                document.getElementById("btnNavLogin").classList.add("active");
+                document.getElementById("viewLogin").classList.remove("hidden");
+                mainContainer.classList.remove("wide-mode");
+            } else if (tab === 'signup') {
+                document.getElementById("btnNavSignup").classList.add("active");
+                document.getElementById("viewSignup").classList.remove("hidden");
+                mainContainer.classList.remove("wide-mode");
+            } else if (tab === 'admin') {
+                document.getElementById("btnNavAdmin").classList.add("active");
+                document.getElementById("viewAdmin").classList.remove("hidden");
+                mainContainer.classList.add("wide-mode");
+                renderAdminTable();
+            }
+        }
+
+        // 1. Sign-Up: Request Account Creation
+        document.getElementById("formSignup").addEventListener("submit", (e) => {
+            e.preventDefault();
+            const company = document.getElementById("regCompany").value.trim();
+            const email = document.getElementById("regEmail").value.trim().toLowerCase();
+            const pass = document.getElementById("regPass").value;
+            const alertBox = document.getElementById("regAlert");
+
+            const users = getUsers();
+            if (users.find(u => u.email === email)) {
+                alertBox.className = "alert alert-err";
+                alertBox.textContent = "An account with this email already exists.";
+                alertBox.style.display = "block";
+                return;
+            }
+
+            // Add as PENDING
+            users.push({ company, email, pass, status: "PENDING" });
+            saveUsers(users);
+
+            alertBox.className = "alert alert-warn";
+            alertBox.textContent = "Request submitted! Account is PENDING verification by an Admin.";
+            alertBox.style.display = "block";
+            document.getElementById("formSignup").reset();
+        });
+
+        // 2. Login Logic
+        document.getElementById("formLogin").addEventListener("submit", (e) => {
+            e.preventDefault();
+            const email = document.getElementById("logEmail").value.trim().toLowerCase();
+            const pass = document.getElementById("logPass").value;
+            const alertBox = document.getElementById("logAlert");
+
+            const users = getUsers();
+            const user = users.find(u => u.email === email);
+
+            if (!user) {
+                alertBox.className = "alert alert-err";
+                alertBox.textContent = "Account not found. Please submit a request via Sign-Up.";
+                alertBox.style.display = "block";
+                return;
+            }
+
+            if (user.pass !== pass) {
+                alertBox.className = "alert alert-err";
+                alertBox.textContent = "Incorrect password credentials.";
+                alertBox.style.display = "block";
+                return;
+            }
+
+            // Check Approval Status
+            if (user.status === "PENDING") {
+                alertBox.className = "alert alert-warn";
+                alertBox.textContent = "Access Denied: Your contract is still under review by our Admin team.";
+                alertBox.style.display = "block";
+                return;
+            }
+
+            if (user.status === "DENIED") {
+                alertBox.className = "alert alert-err";
+                alertBox.textContent = "Access Denied: Deal validation was rejected by the Admin team.";
+                alertBox.style.display = "block";
+                return;
+            }
+
+            // Launch Dashboard
+            alertBox.style.display = "none";
+            document.getElementById("navBar").classList.add("hidden");
+            document.getElementById("viewLogin").classList.add("hidden");
+
+            const mainContainer = document.getElementById("mainContainer");
+            mainContainer.classList.add("wide-mode");
+
+            document.getElementById("viewDashboard").classList.remove("hidden");
+            document.getElementById("dashCompany").textContent = user.company;
+        });
+
+        // 3. Admin Table Render & Actions
+        function renderAdminTable() {
+            const users = getUsers();
+            const tbody = document.getElementById("adminTableBody");
+            tbody.innerHTML = "";
+
+            users.forEach((u, index) => {
+                const row = document.createElement("tr");
+
+                let statusClass = "pill-pending";
+                if (u.status === "APPROVED") statusClass = "pill-approved";
+                if (u.status === "DENIED") statusClass = "pill-denied";
+
+                row.innerHTML = `
+          <td><strong>${u.company}</strong></td>
+          <td>${u.email}</td>
+          <td><span class="status-pill ${statusClass}">${u.status}</span></td>
+          <td>
+            ${u.status === 'PENDING' ? `
+              <button class="btn-action btn-approve" onclick="updateStatus(${index}, 'APPROVED')">Approve Deal</button>
+              <button class="btn-action btn-deny" onclick="updateStatus(${index}, 'DENIED')">Deny</button>
+            ` : `<span style="color:var(--muted); font-size:11px;">Completed</span>`}
+          </td>
+        `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateStatus(index, newStatus) {
+            const users = getUsers();
+            users[index].status = newStatus;
+            saveUsers(users);
+            renderAdminTable();
+        }
+
+        // 4. Logout
+        function doLogout() {
+            const mainContainer = document.getElementById("mainContainer");
+            mainContainer.classList.remove("wide-mode");
+
+            document.getElementById("viewDashboard").classList.add("hidden");
+            document.getElementById("navBar").classList.remove("hidden");
+            switchTab('login');
+        }
+    </script>
+</body>
+
+</html>

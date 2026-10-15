@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Keystone CRM — Request access</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+    <div class="auth-wrap">
+        <div class="auth-brand">
+            <div class="mark">Keystone CRM</div>
+            <div>
+                <h1>Request your team account.</h1>
+                <p>Sign up with your @keystonecrm.com address for instant access. Anyone else is reviewed by an admin
+                    before they can log in.</p>
+            </div>
+            <div class="foot">Access is limited to approved team accounts.</div>
+        </div>
+
+        <div class="auth-form">
+            <div class="auth-card">
+                <h2>Request access</h2>
+                <div id="notice"></div>
+                <form id="signup-form">
+                    <div class="field">
+                        <label for="name">Full name</label>
+                        <input type="text" id="name" required placeholder="Jordan Lee" />
+                    </div>
+                    <div class="field">
+                        <label for="company">Company</label>
+                        <input type="text" id="company" required placeholder="Keystone CRM" />
+                    </div>
+                    <div class="field">
+                        <label for="email">Work email</label>
+                        <input type="email" id="email" required placeholder="you@keystonecrm.com" />
+                    </div>
+                    <div class="field">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" required placeholder="Choose a password" />
+                    </div>
+                    <button class="btn accent" type="submit" style="width:100%">Create account</button>
+                </form>
+                <p class="switch">Already have an account? <a href="index.html">Log in</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        document.getElementById("signup-form").addEventListener("submit", function (e) {
+            e.preventDefault();
+            const name = document.getElementById("name").value.trim();
+            const company = document.getElementById("company").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+            const notice = document.getElementById("notice");
+
+            const result = signup({ name, email, password, company });
+            if (!result.ok) {
+                notice.innerHTML = `<div class="notice error">${result.message}</div>`;
+                return;
+            }
+            document.getElementById("signup-form").reset();
+            if (result.autoApproved) {
+                notice.innerHTML = `<div class="notice info">Account created and verified via your company email. You can log in now.</div>`;
+            } else {
+                notice.innerHTML = `<div class="notice warn">Account created. Your email domain isn't recognized, so an admin needs to approve your request before you can log in.</div>`;
+            }
+        });
+    </script>
+</body>
+
+</html>

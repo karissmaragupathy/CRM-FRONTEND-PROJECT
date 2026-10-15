@@ -1,0 +1,1789 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Client Pilot CRM | Enterprise Revenue & Client Governance</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      min-height: 100vh;
+      background-color: #050d1e;
+      color: #0f172a;
+      overflow-x: hidden;
+    }
+
+    /* Auth Page Deep Gradient Background (Exact color composition from reference) */
+    .auth-bg-gradient {
+      background: radial-gradient(circle at 82% 22%, #3178c6 0%, #1a5298 32%, #0e2e5c 68%, #05142e 100%);
+    }
+
+    /* Left Glassmorphism Hero Panel with distinct asymmetric curved silhouette */
+    .glass-hero-panel {
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(28px) saturate(190%);
+      -webkit-backdrop-filter: blur(28px) saturate(190%);
+      border: 1.5px solid rgba(255, 255, 255, 0.32);
+      border-radius: 2.75rem 1.25rem 2.75rem 2.75rem;
+      box-shadow: 0 35px 70px -15px rgba(2, 12, 35, 0.55),
+        inset 0 1px 2px rgba(255, 255, 255, 0.45);
+    }
+
+    /* Right Dual Auth Card */
+    .auth-surface-card {
+      background: #ffffff;
+      border-radius: 1.75rem;
+      box-shadow: 0 40px 90px -25px rgba(2, 10, 32, 0.7),
+        0 0 0 1px rgba(255, 255, 255, 0.25);
+    }
+
+    /* Input Focus Styles */
+    .form-input {
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #0d6efd;
+      box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.16);
+      background-color: #ffffff;
+    }
+
+    /* Floating SVG Mesh Animations matching the original design */
+    @keyframes floatMeshA {
+
+      0%,
+      100% {
+        transform: translateY(0px) rotate(0deg) scale(1);
+      }
+
+      50% {
+        transform: translateY(-16px) rotate(4deg) scale(1.03);
+      }
+    }
+
+    @keyframes floatMeshB {
+
+      0%,
+      100% {
+        transform: translateY(0px) rotate(0deg) scale(1);
+      }
+
+      50% {
+        transform: translateY(18px) rotate(-5deg) scale(0.97);
+      }
+    }
+
+    .mesh-orbit-1 {
+      animation: floatMeshA 11s ease-in-out infinite;
+    }
+
+    .mesh-orbit-2 {
+      animation: floatMeshB 13s ease-in-out infinite;
+    }
+
+    /* Interactive Kanban Card Styling */
+    .deal-card {
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+
+    .deal-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px -6px rgba(15, 23, 42, 0.1);
+      border-color: #93c5fd;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(241, 245, 249, 0.8);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+
+<body class="antialiased">
+
+  <div id="toastNotification"
+    class="fixed top-6 right-6 z-[100] transform -translate-y-40 transition-all duration-300 pointer-events-none">
+    <div id="toastInner"
+      class="flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-2xl text-xs sm:text-sm font-medium border backdrop-blur-md">
+      <span id="toastIcon" class="text-base"></span>
+      <span id="toastMessage" class="leading-snug"></span>
+    </div>
+  </div>
+
+  <div id="authView"
+    class="auth-bg-gradient min-h-screen relative flex flex-col justify-between p-4 sm:p-6 lg:p-10 select-none">
+
+    <!-- Background Canvas for Interactive Ambient Starlight -->
+    <canvas id="ambientCanvas" class="fixed inset-0 pointer-events-none z-0 w-full h-full opacity-35"></canvas>
+
+    <!-- Bottom Left 3D Wireframe Torus (Replicating user screenshot) -->
+    <div class="fixed -bottom-10 -left-12 w-64 h-64 md:w-96 md:h-96 pointer-events-none z-0 mesh-orbit-1 opacity-80">
+      <svg viewBox="0 0 300 300" fill="none" class="w-full h-full drop-shadow-[0_15px_30px_rgba(0,102,255,0.45)]">
+        <ellipse cx="150" cy="150" rx="125" ry="62" stroke="#60a5fa" stroke-width="1.8" stroke-dasharray="3 3"
+          transform="rotate(-28 150 150)" />
+        <ellipse cx="150" cy="150" rx="105" ry="46" stroke="#93c5fd" stroke-width="1.2" stroke-dasharray="2 2"
+          transform="rotate(-28 150 150)" />
+        <circle cx="150" cy="150" r="115" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="5 5" opacity="0.65" />
+        <ellipse cx="150" cy="150" rx="135" ry="72" stroke="#2563eb" stroke-width="1.6"
+          transform="rotate(35 150 150)" />
+        <ellipse cx="150" cy="150" rx="92" ry="36" stroke="#bfdbfe" stroke-width="1.2" stroke-dasharray="3 2"
+          transform="rotate(35 150 150)" />
+      </svg>
+    </div>
+
+    <!-- Right Center 3D Wireframe Torus (Replicating user screenshot) -->
+    <div class="fixed top-1/3 -right-12 w-64 h-64 md:w-80 md:h-80 pointer-events-none z-0 mesh-orbit-2 opacity-75">
+      <svg viewBox="0 0 300 300" fill="none" class="w-full h-full drop-shadow-[0_15px_30px_rgba(2,132,199,0.4)]">
+        <ellipse cx="150" cy="150" rx="112" ry="56" stroke="#38bdf8" stroke-width="1.8" stroke-dasharray="4 3"
+          transform="rotate(45 150 150)" />
+        <ellipse cx="150" cy="150" rx="88" ry="42" stroke="#7dd3fc" stroke-width="1.4" stroke-dasharray="2 2"
+          transform="rotate(45 150 150)" />
+        <ellipse cx="150" cy="150" rx="128" ry="62" stroke="#0284c7" stroke-width="1.6"
+          transform="rotate(-22 150 150)" />
+      </svg>
+    </div>
+
+    <!-- Ambient Sparkle Icon (Bottom Right, As seen in reference image) -->
+    <div class="fixed bottom-8 right-24 pointer-events-none opacity-40 hidden sm:block">
+      <svg class="w-10 h-10 text-white fill-current" viewBox="0 0 24 24">
+        <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
+      </svg>
+    </div>
+
+    <header
+      class="relative z-20 w-full max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 pb-2">
+      <!-- Domain Verification Pill -->
+      <div
+        class="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs text-sky-100 shadow-sm">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="font-medium text-slate-200">Organization Perimeter:</span>
+        <span class="font-mono text-white bg-sky-950/70 px-2 py-0.5 rounded border border-sky-400/30">@clientpilot.com
+          only</span>
+      </div>
+
+      <!-- Professional Executive Gateway Action (Discreet & Enterprise Grade) -->
+      <div>
+        <button type="button" onclick="openExecutiveGatewayModal()"
+          class="group flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-900 border border-white/20 text-xs font-semibold text-sky-200 hover:text-white shadow-xl backdrop-blur-md transition-all">
+          <div
+            class="w-5 h-5 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          </div>
+          <span>Executive Portal Access</span>
+          <span
+            class="text-[10px] font-mono bg-sky-900/90 text-sky-300 px-1.5 py-0.5 rounded border border-sky-600/40">Tier-1
+            Admins</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="relative z-10 w-full max-w-7xl mx-auto my-auto py-4 sm:py-8">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+
+        <!-- LEFT FROSTED GLASS HERO PANEL (As seen in user screenshot) -->
+        <div
+          class="lg:col-span-5 w-full glass-hero-panel p-8 sm:p-12 lg:p-14 relative flex flex-col justify-between min-h-[460px] lg:min-h-[530px]">
+          <div>
+            <!-- CRM Monogram Pill -->
+            <div class="mb-6">
+              <span class="text-xs sm:text-sm uppercase font-bold tracking-widest text-sky-200/90 font-mono">
+                CRM
+              </span>
+            </div>
+
+            <!-- Client Pilot Headline -->
+            <h1
+              class="text-5xl sm:text-6xl lg:text-7xl font-light text-white tracking-tight leading-[1.05] mb-8 font-sans">
+              Client<br />
+              <span class="font-normal text-white">Pilot</span>
+            </h1>
+
+            <!-- Subtitle from mockup -->
+            <p
+              class="text-sky-100/90 text-sm sm:text-base tracking-wider uppercase font-medium leading-relaxed max-w-xs">
+              A CONVENIENT WAY FOR YOU DEALS TO BE DEALT EASILY
+            </p>
+          </div>
+
+          <!-- JOIN US Action Button (Scrolls smoothly to Create Account form) -->
+          <div class="pt-8">
+            <button type="button" onclick="focusCreateAccount()"
+              class="px-8 py-3 bg-[#0d6efd] hover:bg-[#0b5ed7] active:scale-95 transition-all duration-200 text-white text-xs sm:text-sm font-semibold tracking-wider uppercase rounded-xl shadow-lg shadow-blue-600/35 inline-flex items-center gap-2">
+              <span>JOIN US</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- RIGHT DUAL AUTH CONTAINER (Log In | or | Create Account) -->
+        <div class="lg:col-span-7 w-full auth-surface-card p-6 sm:p-9 lg:p-10 text-slate-800">
+
+          <!-- Real-Time Domain Verification Alert Badge -->
+          <div id="domainAlertBadge"
+            class="hidden mb-5 p-3 rounded-xl text-xs font-medium items-center gap-2.5 transition-all">
+            <svg id="domainAlertIcon" class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24"></svg>
+            <span id="domainAlertMsg" class="leading-tight"></span>
+          </div>
+
+          <!-- Dual Form Layout Split with Center 'or' Divider -->
+          <div class="grid grid-cols-1 md:grid-cols-11 gap-6 items-stretch relative">
+
+            <!-- 1. LEFT SIDE: LOG IN -->
+            <div class="md:col-span-5 flex flex-col justify-between">
+              <form id="loginForm" onsubmit="handleStandardLogin(event)" class="space-y-4">
+                <h2 class="text-2xl font-normal text-slate-900 tracking-tight mb-4">Log In</h2>
+
+                <!-- Email Input with Icon (From mockup) -->
+                <div>
+                  <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                          d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <input type="email" id="loginEmail" placeholder="Email Address"
+                      oninput="validateDomainRealtime(this.value, 'login')"
+                      class="form-input w-full pl-9 pr-3 py-2.5 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 border border-slate-300 rounded-lg bg-slate-50/60"
+                      required />
+                  </div>
+                </div>
+
+                <!-- Password Input with Lock Icon (From mockup) -->
+                <div>
+                  <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                          d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                    </div>
+                    <input type="password" id="loginPassword" placeholder="Password"
+                      class="form-input w-full pl-9 pr-8 py-2.5 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 border border-slate-300 rounded-lg bg-slate-50/60"
+                      required />
+                    <button type="button" onclick="togglePasswordDisplay('loginPassword')"
+                      class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-600">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div class="text-right pt-1">
+                    <a href="javascript:void(0)" onclick="handleForgotPassword()"
+                      class="text-[11px] text-slate-600 hover:text-blue-600 font-medium hover:underline">Forgot
+                      Password?</a>
+                  </div>
+                </div>
+
+                <!-- Blue Log In CTA -->
+                <div class="pt-2">
+                  <button type="submit" id="loginSubmitBtn"
+                    class="w-full py-2.5 px-4 bg-[#0d6efd] hover:bg-[#0b5ed7] active:scale-[0.99] text-white text-xs sm:text-sm font-semibold rounded-lg shadow transition">
+                    Log In
+                  </button>
+                </div>
+              </form>
+
+              <div
+                class="mt-5 pt-3 border-t border-slate-100 text-[11px] text-slate-400 flex items-center justify-between">
+                <span>Domain Policy:</span>
+                <span class="font-mono text-blue-600 font-medium">@clientpilot.com</span>
+              </div>
+            </div>
+
+            <!-- CENTER 'or' SEPARATOR -->
+            <div class="hidden md:flex md:col-span-1 flex-col items-center justify-center relative">
+              <div class="w-px h-full bg-slate-200"></div>
+              <span class="absolute bg-white px-2 text-xs font-normal text-slate-400">or</span>
+            </div>
+
+            <div class="md:hidden flex items-center my-3">
+              <div class="flex-grow border-t border-slate-200"></div>
+              <span class="px-3 text-xs text-slate-400">or</span>
+              <div class="flex-grow border-t border-slate-200"></div>
+            </div>
+
+            <!-- 2. RIGHT SIDE: CREATE ACCOUNT -->
+            <div class="md:col-span-5 flex flex-col justify-between" id="registerFormArea">
+              <form id="registerForm" onsubmit="handleNewAccountCreation(event)" class="space-y-3">
+                <h2 class="text-2xl font-normal text-slate-900 tracking-tight mb-4">Create Account</h2>
+
+                <div>
+                  <input type="text" id="regFullName" placeholder="Full Name"
+                    class="form-input w-full px-3 py-2 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 border border-slate-300 rounded-lg bg-slate-50/60"
+                    required />
+                </div>
+
+                <div>
+                  <input type="email" id="regEmail" placeholder="Email Address"
+                    oninput="validateDomainRealtime(this.value, 'register')"
+                    class="form-input w-full px-3 py-2 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 border border-slate-300 rounded-lg bg-slate-50/60"
+                    required />
+                </div>
+
+                <div>
+                  <input type="password" id="regPassword" placeholder="Password"
+                    class="form-input w-full px-3 py-2 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 border border-slate-300 rounded-lg bg-slate-50/60"
+                    required />
+                </div>
+
+                <div>
+                  <input type="password" id="regConfirmPassword" placeholder="Confirm Password"
+                    class="form-input w-full px-3 py-2 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 border border-slate-300 rounded-lg bg-slate-50/60"
+                    required />
+                </div>
+
+                <div class="flex items-center gap-2 pt-0.5">
+                  <input type="checkbox" id="termsCheck" required
+                    class="w-3.5 h-3.5 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer" />
+                  <label for="termsCheck" class="text-[11px] text-slate-600 leading-tight cursor-pointer">
+                    I agree to the <a href="javascript:void(0)" onclick="openComplianceModal()"
+                      class="text-blue-600 hover:underline">Terms & Conditions</a>
+                  </label>
+                </div>
+
+                <div class="pt-2">
+                  <button type="submit" id="regSubmitBtn"
+                    class="w-full py-2.5 px-4 bg-[#0d6efd] hover:bg-[#0b5ed7] active:scale-[0.99] text-white text-xs sm:text-sm font-semibold rounded-lg shadow transition">
+                    Create Account
+                  </button>
+                </div>
+              </form>
+
+              <div class="mt-4 pt-2 text-center text-[10px] text-slate-400">
+                Corporate security clearance required for new CRM seats.
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </main>
+
+    <!-- AUTH FOOTER -->
+    <footer
+      class="relative z-10 w-full max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between text-xs text-sky-200/70 pt-4 border-t border-white/10">
+      <div>© 2026 Client Pilot Enterprise Technologies. All rights reserved.</div>
+      <div class="flex items-center gap-4 mt-2 sm:mt-0">
+        <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> SOC2 Type
+          II Certified</span>
+        <span>•</span>
+        <span>AES-256 Vault Encryption</span>
+      </div>
+    </footer>
+  </div>
+
+  <div id="executiveGatewayModal"
+    class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden items-center justify-center p-4">
+    <div
+      class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 text-slate-900 shadow-2xl relative border border-slate-100 animate-in fade-in zoom-in duration-200">
+
+      <!-- Modal Close Button -->
+      <button type="button" onclick="closeExecutiveGatewayModal()"
+        class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <div class="flex items-center gap-3.5 mb-5">
+        <div
+          class="w-12 h-12 rounded-2xl bg-slate-900 text-sky-400 flex items-center justify-center shadow-lg shadow-slate-900/20">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h3 class="text-xl font-bold text-slate-900 tracking-tight">Executive Gateway</h3>
+            <span
+              class="text-[10px] font-mono bg-blue-50 text-blue-700 px-2 py-0.5 rounded-md border border-blue-200 font-semibold">Tier-1
+              Admins</span>
+          </div>
+          <p class="text-xs text-slate-500 mt-0.5">Select an executive administrator identity to verify and launch
+            governance console</p>
+        </div>
+      </div>
+
+      <!-- 3 Real Executive Identities -->
+      <div class="space-y-3 mb-6" id="executiveProfilesList">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Passkey or Manual Executive Credentials Input -->
+      <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs space-y-3">
+        <div class="flex items-center justify-between text-slate-600 font-medium">
+          <span>Active Identity Session:</span>
+          <span id="selectedAdminSummary" class="font-mono text-blue-600 font-bold">Elena Rostova (CISO)</span>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Corporate Passkey
+            / Master Key</label>
+          <div class="relative">
+            <input type="password" id="executivePasskey" value="AdminGovSecure2026!"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-mono bg-white focus:outline-none focus:border-blue-600" />
+            <span class="absolute right-3 top-2 text-[10px] font-mono text-slate-400">AES-256</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 flex items-center justify-end gap-3">
+        <button type="button" onclick="closeExecutiveGatewayModal()"
+          class="px-4 py-2.5 text-xs text-slate-600 hover:text-slate-800 font-medium">Cancel</button>
+        <button type="button" onclick="authenticateExecutiveAdmin()"
+          class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white font-semibold text-xs rounded-xl shadow-lg shadow-slate-900/25 flex items-center gap-2 transition">
+          <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+          </svg>
+          <span>Authenticate & Launch Admin Console</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="userWelcomeModal"
+    class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md hidden items-center justify-center p-4">
+    <div
+      class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 text-slate-900 shadow-2xl relative border border-slate-100 animate-in fade-in zoom-in duration-200">
+
+      <div
+        class="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center mx-auto mb-4 shadow-xl shadow-blue-500/30">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+      </div>
+
+      <div class="text-center space-y-1">
+        <span
+          class="text-[11px] font-mono text-emerald-600 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full font-semibold">ENTERPRISE
+          SEAT VERIFIED</span>
+        <h3 class="text-2xl font-bold text-slate-900 tracking-tight" id="welcomeHeadingName">Welcome to Client Pilot!
+        </h3>
+        <p class="text-xs text-slate-500 max-w-xs mx-auto" id="welcomeUserSubText">Your corporate profile has been
+          authenticated under @clientpilot.com internal records.</p>
+      </div>
+
+      <div class="mt-6 bg-slate-50 rounded-2xl p-4 border border-slate-200 text-xs space-y-2.5">
+        <div class="flex items-center justify-between">
+          <span class="text-slate-500 font-medium">Assigned Seat ID:</span>
+          <span class="font-mono text-slate-900 font-semibold" id="assignedSeatBadge">CP-SEAT-2026-09</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-slate-500 font-medium">Assigned Role:</span>
+          <span class="text-blue-700 font-semibold">Senior Client Solutions Lead</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-slate-500 font-medium">Security Clearance:</span>
+          <span class="text-emerald-600 font-semibold flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> SOC2 Synced
+          </span>
+        </div>
+      </div>
+
+      <!-- Welcome Setup Checklist -->
+      <div class="mt-4 p-3 bg-blue-50/60 rounded-xl border border-blue-100 text-xs text-blue-900 space-y-1.5">
+        <div class="font-semibold flex items-center gap-1.5 text-blue-800">
+          <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+          <span>Workspace Provisioning Checklist</span>
+        </div>
+        <p class="text-[11px] text-blue-700/90 leading-relaxed">
+          Default sales pipeline boards, deal velocity widgets, and client activity streams have been initialized for
+          your team.
+        </p>
+      </div>
+
+      <div class="mt-6">
+        <button type="button" onclick="launchWorkspaceFromWelcome()"
+          class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-lg shadow-blue-500/25 transition">
+          Launch Client Pilot Workspace
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="dashboardView" class="hidden min-h-screen bg-slate-50 flex-col">
+
+    <!-- DASHBOARD TOP HEADER / NAVBAR -->
+    <header
+      class="bg-white border-b border-slate-200 sticky top-0 z-30 px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-sm">
+      <div class="flex items-center gap-6">
+        <!-- Logo -->
+        <div class="flex items-center gap-2.5">
+          <div
+            class="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-blue-500/30">
+            CP
+          </div>
+          <div>
+            <span class="font-bold text-base text-slate-900 tracking-tight leading-none block">Client Pilot</span>
+            <span class="text-[10px] text-slate-500 font-mono tracking-wider">ENTERPRISE CRM</span>
+          </div>
+        </div>
+
+        <!-- Tenant Location Badge -->
+        <div
+          class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 text-xs text-slate-700 font-medium border border-slate-200">
+          <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+          <span id="navTenantName">Client Pilot HQ (Single Tenant)</span>
+        </div>
+      </div>
+
+      <!-- Center Search Bar (Command Menu) -->
+      <div class="hidden lg:flex items-center relative w-80">
+        <svg class="w-4 h-4 text-slate-400 absolute left-3 pointer-events-none" fill="none" stroke="currentColor"
+          viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input type="text" id="dashboardSearch" oninput="handleSearchQuery(this.value)"
+          placeholder="Search deals, security audits, team members..."
+          class="w-full pl-9 pr-8 py-1.5 text-xs bg-slate-100 border border-slate-200 rounded-lg text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white transition" />
+        <span
+          class="absolute right-2.5 text-[10px] bg-white border border-slate-200 text-slate-400 px-1 rounded font-mono">⌘K</span>
+      </div>
+
+      <!-- Right Navigation Actions & User Profile -->
+      <div class="flex items-center gap-3">
+
+        <!-- Action: New Deal Button (Visible on Member View) -->
+        <button type="button" id="navNewDealBtn" onclick="openDealCreationModal()"
+          class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-semibold rounded-lg shadow-sm flex items-center gap-1.5 transition">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          <span>New Deal</span>
+        </button>
+
+        <!-- Admin Console Switcher (Visible only if current user is an Admin) -->
+        <div id="adminToggleContainer" class="hidden">
+          <button type="button" onclick="switchDashboardTab('admin')" id="adminViewTabBtn"
+            class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 bg-slate-900 text-white flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            <span>Admin Console</span>
+          </button>
+        </div>
+
+        <!-- Notification Bell -->
+        <div class="relative">
+          <button type="button" onclick="showNotificationToast()"
+            class="p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 relative">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500"></span>
+          </button>
+        </div>
+
+        <div class="h-6 w-px bg-slate-200 mx-1"></div>
+
+        <!-- Authenticated User Profile Pill -->
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2">
+            <div id="navUserAvatar"
+              class="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs shadow-sm">
+              ER
+            </div>
+            <div class="hidden sm:block text-left">
+              <div id="navUserName" class="text-xs font-semibold text-slate-800 leading-tight">Elena Rostova</div>
+              <div id="navUserRole" class="text-[10px] text-blue-600 font-medium leading-tight">Chief Information
+                Security Officer</div>
+            </div>
+          </div>
+
+          <!-- Log Out Button (Seamless return to authentic login page) -->
+          <button type="button" onclick="performLogOut()" title="Sign out of Client Pilot session"
+            class="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+          </button>
+        </div>
+
+      </div>
+    </header>
+
+    <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1600px] w-full mx-auto space-y-6">
+
+      <!-- SUB-HEADER / WELCOME BANNER -->
+      <div
+        class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+        <div>
+          <div class="flex items-center gap-2.5">
+            <h2 class="text-xl font-bold text-slate-900 tracking-tight" id="dashGreetingHeader">Welcome back, Elena</h2>
+            <span id="dashRolePill"
+              class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-semibold border border-blue-200">EXECUTIVE
+              SUPER ADMIN</span>
+          </div>
+          <p class="text-xs text-slate-500 mt-1">Tenant: @clientpilot.com • Live pipeline metrics & SOC2 continuous
+            audit stream</p>
+        </div>
+
+        <!-- Dashboard View Switcher (Pipeline View vs Admin Governance) -->
+        <div class="flex items-center gap-2">
+          <button id="viewBtnPipeline" onclick="switchDashboardTab('pipeline')"
+            class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white shadow-sm transition">
+            Pipeline Board
+          </button>
+          <button id="viewBtnAdmin" onclick="switchDashboardTab('admin')"
+            class="px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 transition">
+            Admin Governance
+          </button>
+        </div>
+      </div>
+
+      <div id="pipelineWorkspace" class="space-y-6">
+
+        <!-- 4 Key CRM KPI Metric Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Active Pipeline</span>
+              <span class="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">+18.4%
+                MoM</span>
+            </div>
+            <div class="mt-3">
+              <div class="text-2xl font-bold text-slate-900 tracking-tight" id="totalPipelineSum">$4,285,000</div>
+              <div class="text-xs text-slate-400 mt-0.5">Weighted: $3.12M based on win stage weights</div>
+            </div>
+            <div
+              class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+              <span>Quarter Target: $5.0M</span>
+              <span class="font-semibold text-blue-600">85.7% reached</span>
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Deals in Flight</span>
+              <span class="text-[11px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">+12 new</span>
+            </div>
+            <div class="mt-3">
+              <div class="text-2xl font-bold text-slate-900 tracking-tight" id="activeDealsCount">142 Deals</div>
+              <div class="text-xs text-slate-400 mt-0.5">Across 8 global enterprise sectors</div>
+            </div>
+            <div
+              class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+              <span>Confidence Metric</span>
+              <span class="font-semibold text-emerald-600">92% healthy</span>
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Win Ratio</span>
+              <span
+                class="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">+4.2%</span>
+            </div>
+            <div class="mt-3">
+              <div class="text-2xl font-bold text-slate-900 tracking-tight">68.2%</div>
+              <div class="text-xs text-slate-400 mt-0.5">Benchmarked against Tier-1 SaaS average</div>
+            </div>
+            <div
+              class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+              <span>Conversion Speed</span>
+              <span class="font-semibold text-slate-700">Top Quartile</span>
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Average Deal Cycle</span>
+              <span class="text-[11px] font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">-3.5
+                days</span>
+            </div>
+            <div class="mt-3">
+              <div class="text-2xl font-bold text-slate-900 tracking-tight">24 Days</div>
+              <div class="text-xs text-slate-400 mt-0.5">First discovery touch to signed MSA</div>
+            </div>
+            <div
+              class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+              <span>Stage Velocity</span>
+              <span class="font-semibold text-emerald-600">Accelerating</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- MAIN KANBAN DEAL PIPELINE & ACTIVITY SIDEBAR -->
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+
+          <!-- Interactive 5-Stage Kanban Board -->
+          <div class="xl:col-span-8 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+            <div
+              class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+              <div>
+                <h3 class="font-bold text-slate-900 text-base">Interactive Deal Pipeline Board</h3>
+                <p class="text-xs text-slate-500">Track and advance client deal lifecycle across corporate stages</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-slate-400">Sort:</span>
+                <select id="dealSortSelect" onchange="renderKanbanGrid()"
+                  class="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-slate-700 font-medium focus:outline-none">
+                  <option value="val-desc">Value (High to Low)</option>
+                  <option value="val-asc">Value (Low to High)</option>
+                  <option value="company">Client Name</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- 5 Columns Container (Horizontally scrollable for responsiveness) -->
+            <div class="overflow-x-auto pb-2">
+              <div class="grid grid-cols-5 gap-3 min-w-[920px]" id="kanbanColsContainer">
+                <!-- Populated dynamically via renderKanbanGrid() -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Revenue Velocity Visualizer & Audit Trail Stream -->
+          <div class="xl:col-span-4 space-y-6">
+
+            <!-- Revenue Velocity Canvas Chart -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-3">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h4 class="font-bold text-slate-900 text-sm">Revenue Trajectory</h4>
+                  <p class="text-[11px] text-slate-500">Won Revenue vs Forecast (in Thousands)</p>
+                </div>
+                <span class="text-[10px] font-mono bg-blue-50 text-blue-700 px-2 py-0.5 rounded font-semibold">Q3
+                  2026</span>
+              </div>
+
+              <div class="h-44 relative flex items-center justify-center">
+                <canvas id="pipelineRevenueCanvas" class="w-full h-full"></canvas>
+              </div>
+
+              <div class="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 text-center">
+                <div>
+                  <div class="text-[10px] text-slate-400">JULY</div>
+                  <div class="text-xs font-bold text-slate-800">$840k</div>
+                </div>
+                <div>
+                  <div class="text-[10px] text-slate-400">AUGUST</div>
+                  <div class="text-xs font-bold text-slate-800">$1,120k</div>
+                </div>
+                <div>
+                  <div class="text-[10px] text-slate-400">SEPTEMBER</div>
+                  <div class="text-xs font-bold text-emerald-600">$1,450k</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Activity Stream -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-3">
+              <div class="flex items-center justify-between">
+                <h4 class="font-bold text-slate-900 text-sm">Real-time Activity Stream</h4>
+                <button onclick="clearActivityStream()"
+                  class="text-[11px] text-slate-400 hover:text-slate-600">Clear</button>
+              </div>
+
+              <div class="space-y-3 max-h-[300px] overflow-y-auto pr-1" id="activityLogsList">
+                <!-- Rendered dynamically -->
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div id="adminWorkspace" class="hidden space-y-6">
+
+        <!-- Super Admin Governance Matrix -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Corporate Tenant
+              Perimeter</span>
+            <div class="text-xl font-bold text-slate-900 font-mono">clientpilot.com</div>
+            <p class="text-xs text-emerald-600 flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              Strict Domain Locking Active (No 3rd Party)
+            </p>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Enterprise Seat Licensing</span>
+            <div class="text-xl font-bold text-slate-900">42 / 50 Allocated</div>
+            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+              <div class="bg-blue-600 h-full w-[84%]"></div>
+            </div>
+            <p class="text-[11px] text-slate-400">8 seats available for provisioning</p>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Security & Audit
+              Compliance</span>
+            <div class="text-xl font-bold text-slate-900">SOC2 Type II</div>
+            <p class="text-xs text-blue-600 font-medium">Automatic passkey rotation enabled</p>
+          </div>
+        </div>
+
+        <!-- Team & Executive Roster Table -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+          <div class="flex items-center justify-between border-b pb-4">
+            <div>
+              <h3 class="font-bold text-slate-900 text-base">Authorized Organization Members</h3>
+              <p class="text-xs text-slate-500">Verified corporate accounts under @clientpilot.com</p>
+            </div>
+            <button onclick="promptProvisionNewSeat()"
+              class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg shadow transition">
+              + Provision New Seat
+            </button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead>
+                <tr class="border-b border-slate-100 text-slate-400 font-semibold uppercase tracking-wider">
+                  <th class="py-3 px-3">Identity</th>
+                  <th class="py-3 px-3">Corporate Email</th>
+                  <th class="py-3 px-3">Access Tier</th>
+                  <th class="py-3 px-3">Active Deals</th>
+                  <th class="py-3 px-3">Status</th>
+                  <th class="py-3 px-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminTeamTableBody" class="divide-y divide-slate-100">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <div id="dealCreateModal"
+    class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 text-slate-900 shadow-2xl relative border border-slate-200">
+
+      <div class="flex items-center justify-between border-b pb-3 mb-4">
+        <h4 class="font-bold text-base text-slate-800">Add Enterprise Client Deal</h4>
+        <button onclick="closeDealModal()" class="text-slate-400 hover:text-slate-600">✕</button>
+      </div>
+
+      <form onsubmit="submitDealForm(event)" class="space-y-3.5 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Company / Account Name</label>
+          <input type="text" id="dealInputCompany" placeholder="e.g. Apex Global Tech" required
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Deal Value ($ USD)</label>
+            <input type="number" id="dealInputValue" placeholder="150000" min="1000" required
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500" />
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Pipeline Stage</label>
+            <select id="dealInputStage"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500">
+              <option value="discovery">Discovery</option>
+              <option value="pitch">Meeting / Pitch</option>
+              <option value="proposal">Proposal Sent</option>
+              <option value="contract">Contract Review</option>
+              <option value="closed">Won / Closed</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Deal Health</label>
+            <select id="dealInputHealth"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500">
+              <option value="High">High Confidence</option>
+              <option value="Medium">Medium Attention</option>
+              <option value="Risk">Attention Required (Risk)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Executive Owner</label>
+            <select id="dealInputOwner"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500">
+              <option value="Elena Rostova">Elena Rostova</option>
+              <option value="Marcus Vance">Marcus Vance</option>
+              <option value="Sarah Jenkins">Sarah Jenkins</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t flex items-center justify-end gap-2">
+          <button type="button" onclick="closeDealModal()"
+            class="px-4 py-2 text-slate-500 hover:text-slate-800 font-medium">Cancel</button>
+          <button type="submit"
+            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-sm">Add
+            Deal</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <div id="complianceModal"
+    class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 text-slate-900 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b pb-3">
+        <h4 class="font-bold text-base text-slate-800">Client Pilot Security & Governance Policy</h4>
+        <button onclick="closeComplianceModal()" class="text-slate-400 hover:text-slate-600">✕</button>
+      </div>
+      <div class="text-xs text-slate-600 space-y-2.5 leading-relaxed">
+        <p>1. <strong>Strict Organizational Locking:</strong> Access is restricted solely to accounts created with
+          <code>@clientpilot.com</code>. Personal domains like Gmail or Yahoo are rejected by default.</p>
+        <p>2. <strong>Role Governance:</strong> Executive administrators hold immutable audit powers, passkey rotations,
+          and license seat allocations.</p>
+        <p>3. <strong>Data Isolation:</strong> All client and deal records are secured with AES-256 encryption at rest
+          and in transit.</p>
+      </div>
+      <div class="text-right pt-2">
+        <button onclick="closeComplianceModal()"
+          class="px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg">Acknowledge</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* =========================================================================
+     * 1. PRE-SEEDED EXECUTIVE ADMINISTRATORS & CORPORATE ROSTER
+     * ========================================================================= */
+    const EXECUTIVE_ADMINS = [
+      {
+        id: "adm-01",
+        name: "Elena Rostova",
+        email: "elena.rostova@clientpilot.com",
+        role: "Chief Information Security Officer & Managing Admin",
+        title: "CISO / Managing Admin",
+        initials: "ER",
+        clearance: "Tier-1 Super Admin",
+        dealsManaged: 38,
+        status: "Active (MFA Synced)"
+      },
+      {
+        id: "adm-02",
+        name: "Marcus Vance",
+        email: "marcus.vance@clientpilot.com",
+        role: "VP of Operations & Co-Admin",
+        title: "VP Operations",
+        initials: "MV",
+        clearance: "Tier-1 Super Admin",
+        dealsManaged: 46,
+        status: "Active (MFA Synced)"
+      },
+      {
+        id: "adm-03",
+        name: "Sarah Jenkins",
+        email: "sarah.jenkins@clientpilot.com",
+        role: "Director of Systems & Infrastructure Admin",
+        title: "Director Systems",
+        initials: "SJ",
+        clearance: "Tier-1 Super Admin",
+        dealsManaged: 52,
+        status: "Active (MFA Synced)"
+      }
+    ];
+
+    const MANDATORY_DOMAIN = "clientpilot.com";
+    const BLOCKED_PUBLIC_DOMAINS = [
+      "gmail.com", "yahoo.com", "hotmail.com", "outlook.com",
+      "icloud.com", "mail.com", "zoho.com", "proton.me", "aol.com", "live.com"
+    ];
+
+    // Pipeline Deals Dataset
+    let dealsList = [
+      { id: "D-101", company: "Apex Global Tech", value: 340000, stage: "discovery", health: "High", owner: "Elena Rostova" },
+      { id: "D-102", company: "Starlight FinServ", value: 520000, stage: "discovery", health: "Medium", owner: "Marcus Vance" },
+      { id: "D-103", company: "Quantico Systems", value: 780000, stage: "pitch", health: "High", owner: "Sarah Jenkins" },
+      { id: "D-104", company: "Vanguard Logistics", value: 290000, stage: "pitch", health: "Risk", owner: "Marcus Vance" },
+      { id: "D-105", company: "BluePeak Health", value: 650000, stage: "proposal", health: "High", owner: "Elena Rostova" },
+      { id: "D-106", company: "Cortex Intelligence", value: 430000, stage: "proposal", health: "Medium", owner: "Sarah Jenkins" },
+      { id: "D-107", company: "Orion Aerospace", value: 890000, stage: "contract", health: "High", owner: "Marcus Vance" },
+      { id: "D-108", company: "Aura Media Corp", value: 375000, stage: "closed", health: "High", owner: "Elena Rostova" }
+    ];
+
+    // Real-Time Audit Activities
+    let activityLog = [
+      { user: "Elena Rostova", action: "Initiated CISO telemetry audit for Q3 pipeline", time: "10m ago" },
+      { user: "Marcus Vance", action: "Advanced Orion Aerospace to Contract Review stage", time: "28m ago" },
+      { user: "Sarah Jenkins", action: "Updated security keys for SOC2 compliance vault", time: "1h ago" },
+      { user: "System", action: "Restricted 3 unauthorized domain connection attempts", time: "2h ago" }
+    ];
+
+    let currentLoggedInUser = null;
+    let pendingProvisionUser = null;
+    let activeSelectedAdmin = EXECUTIVE_ADMINS[0];
+
+    /* =========================================================================
+     * 2. EXECUTIVE GATEWAY MODAL LOGIC
+     * ========================================================================= */
+    function renderExecutiveProfiles() {
+      const container = document.getElementById('executiveProfilesList');
+      container.innerHTML = EXECUTIVE_ADMINS.map((adm, idx) => {
+        const isSelected = adm.email === activeSelectedAdmin.email;
+        return `
+          <div onclick="selectExecutive('${adm.email}')" class="p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${isSelected ? 'bg-blue-50/70 border-blue-500 shadow-sm' : 'bg-white hover:bg-slate-50 border-slate-200'}">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl ${isSelected ? 'bg-blue-600 text-white' : 'bg-slate-800 text-sky-300'} flex items-center justify-center font-bold text-xs">
+                ${adm.initials}
+              </div>
+              <div>
+                <div class="text-xs font-bold text-slate-900">${adm.name}</div>
+                <div class="text-[11px] text-slate-500">${adm.role}</div>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded ${isSelected ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'} font-semibold">
+                ${isSelected ? 'Selected' : 'Select'}
+              </span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('selectedAdminSummary').textContent = `${activeSelectedAdmin.name} (${activeSelectedAdmin.title})`;
+    }
+
+    function selectExecutive(email) {
+      const found = EXECUTIVE_ADMINS.find(a => a.email === email);
+      if (found) {
+        activeSelectedAdmin = found;
+        renderExecutiveProfiles();
+      }
+    }
+
+    function openExecutiveGatewayModal() {
+      renderExecutiveProfiles();
+      const m = document.getElementById('executiveGatewayModal');
+      m.classList.remove('hidden');
+      m.classList.add('flex');
+    }
+
+    function closeExecutiveGatewayModal() {
+      const m = document.getElementById('executiveGatewayModal');
+      m.classList.add('hidden');
+      m.classList.remove('flex');
+    }
+
+    function authenticateExecutiveAdmin() {
+      closeExecutiveGatewayModal();
+      currentLoggedInUser = {
+        name: activeSelectedAdmin.name,
+        email: activeSelectedAdmin.email,
+        role: activeSelectedAdmin.role,
+        initials: activeSelectedAdmin.initials,
+        isAdmin: true,
+        clearance: activeSelectedAdmin.clearance
+      };
+
+      showToast(`Executive Authenticated: ${activeSelectedAdmin.name}`, 'success');
+      launchDashboard(true);
+    }
+
+    /* =========================================================================
+     * 3. STRICT DOMAIN RESTRICTION ENGINE
+     * ========================================================================= */
+    function validateDomainRealtime(emailValue, formType) {
+      const clean = emailValue.trim().toLowerCase();
+      const badge = document.getElementById('domainAlertBadge');
+      const icon = document.getElementById('domainAlertIcon');
+      const msg = document.getElementById('domainAlertMsg');
+
+      const loginBtn = document.getElementById('loginSubmitBtn');
+      const regBtn = document.getElementById('regSubmitBtn');
+
+      if (!clean || !clean.includes('@')) {
+        badge.className = 'hidden';
+        loginBtn.disabled = false;
+        regBtn.disabled = false;
+        loginBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        regBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        return true;
+      }
+
+      const domain = clean.split('@')[1] || '';
+      const isBlocked = BLOCKED_PUBLIC_DOMAINS.some(bad => domain.includes(bad));
+
+      if (isBlocked) {
+        badge.className = 'flex mb-5 p-3 rounded-xl text-xs font-medium items-center gap-2.5 bg-rose-50 border border-rose-200 text-rose-800';
+        icon.className = 'w-4 h-4 text-rose-600 flex-shrink-0';
+        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>';
+        msg.innerHTML = `<strong>Domain Blocked:</strong> <code>@${domain}</code> is a public email provider. Only corporate <code>@${MANDATORY_DOMAIN}</code> addresses are allowed.`;
+
+        if (formType === 'login') {
+          loginBtn.disabled = true;
+          loginBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        } else {
+          regBtn.disabled = true;
+          regBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+        return false;
+      }
+
+      if (domain !== MANDATORY_DOMAIN) {
+        badge.className = 'flex mb-5 p-3 rounded-xl text-xs font-medium items-center gap-2.5 bg-amber-50 border border-amber-200 text-amber-800';
+        icon.className = 'w-4 h-4 text-amber-600 flex-shrink-0';
+        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>';
+        msg.innerHTML = `<strong>Unrecognized Domain:</strong> <code>@${domain}</code> not in corporate directory. Must end with <code>@${MANDATORY_DOMAIN}</code>.`;
+        return false;
+      }
+
+      // Valid Corporate Match
+      badge.className = 'flex mb-5 p-3 rounded-xl text-xs font-medium items-center gap-2.5 bg-emerald-50 border border-emerald-200 text-emerald-800';
+      icon.className = 'w-4 h-4 text-emerald-600 flex-shrink-0';
+      icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>';
+      msg.innerHTML = `<strong>Corporate Identity Confirmed:</strong> Internal record verified for <code>@${domain}</code>.`;
+
+      loginBtn.disabled = false;
+      regBtn.disabled = false;
+      loginBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      regBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      return true;
+    }
+
+    /* =========================================================================
+     * 4. STANDARD LOGIN & NEW USER CREATION HANDLERS
+     * ========================================================================= */
+    function handleStandardLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+
+      if (!validateDomainRealtime(email, 'login')) {
+        showToast('Access Denied: Only @clientpilot.com corporate accounts permitted.', 'error');
+        return;
+      }
+
+      // Check if matches an executive admin
+      const matchedAdmin = EXECUTIVE_ADMINS.find(a => a.email === email);
+      if (matchedAdmin) {
+        currentLoggedInUser = {
+          name: matchedAdmin.name,
+          email: matchedAdmin.email,
+          role: matchedAdmin.role,
+          initials: matchedAdmin.initials,
+          isAdmin: true,
+          clearance: matchedAdmin.clearance
+        };
+        showToast(`Executive Session Established: ${matchedAdmin.name}`, 'success');
+        launchDashboard(true);
+        return;
+      }
+
+      // Standard Corporate User
+      const formattedName = email.split('@')[0].replace('.', ' ').replace(/\b\w/g, l => l.toUpperCase());
+      currentLoggedInUser = {
+        name: formattedName,
+        email: email,
+        role: "Senior Enterprise Partner",
+        initials: formattedName.split(' ').map(n => n[0]).join('').substring(0, 2),
+        isAdmin: false,
+        clearance: "Tier-2 Corporate Member"
+      };
+
+      showToast(`Welcome back, ${currentLoggedInUser.name}!`, 'success');
+      launchDashboard(false);
+    }
+
+    function handleNewAccountCreation(e) {
+      e.preventDefault();
+      const name = document.getElementById('regFullName').value.trim();
+      const email = document.getElementById('regEmail').value.trim().toLowerCase();
+      const pass = document.getElementById('regPassword').value;
+      const confirmPass = document.getElementById('regConfirmPassword').value;
+
+      if (pass !== confirmPass) {
+        showToast('Password confirmation does not match.', 'error');
+        return;
+      }
+
+      if (!validateDomainRealtime(email, 'register')) {
+        showToast('Registration Restricted: Corporate domain @clientpilot.com required.', 'error');
+        return;
+      }
+
+      // Store pending user and display personalized onboarding welcome modal
+      pendingProvisionUser = {
+        name: name,
+        email: email,
+        role: "Senior Client Solutions Lead",
+        initials: name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'CP',
+        isAdmin: false,
+        clearance: "Tier-2 Verified Member"
+      };
+
+      document.getElementById('welcomeHeadingName').textContent = `Welcome, ${name}!`;
+      document.getElementById('assignedSeatBadge').textContent = `CP-SEAT-${Math.floor(1000 + Math.random() * 9000)}`;
+
+      const modal = document.getElementById('userWelcomeModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+
+      // Record Activity
+      activityLog.unshift({
+        user: name,
+        action: `Provisioned new corporate seat (${email})`,
+        time: "Just now"
+      });
+    }
+
+    function launchWorkspaceFromWelcome() {
+      const modal = document.getElementById('userWelcomeModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+
+      currentLoggedInUser = pendingProvisionUser;
+      showToast('Workspace initialized. Welcome to the team!', 'success');
+      launchDashboard(false);
+    }
+
+    /* =========================================================================
+     * 5. DASHBOARD LAUNCH & DUAL VIEW SWITCHING
+     * ========================================================================= */
+    function launchDashboard(isAdmin = false) {
+      document.getElementById('authView').classList.add('hidden');
+      const dash = document.getElementById('dashboardView');
+      dash.classList.remove('hidden');
+      dash.classList.add('flex');
+
+      // Populate Navbar and Greeting Header
+      document.getElementById('navUserName').textContent = currentLoggedInUser.name;
+      document.getElementById('navUserRole').textContent = currentLoggedInUser.role;
+      document.getElementById('navUserAvatar').textContent = currentLoggedInUser.initials;
+      document.getElementById('dashGreetingHeader').textContent = `Welcome back, ${currentLoggedInUser.name.split(' ')[0]}`;
+
+      const roleBadge = document.getElementById('dashRolePill');
+      const adminNavBtn = document.getElementById('adminToggleContainer');
+      const viewBtnAdmin = document.getElementById('viewBtnAdmin');
+
+      if (currentLoggedInUser.isAdmin) {
+        roleBadge.textContent = 'EXECUTIVE SUPER ADMIN';
+        roleBadge.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-900 text-sky-300 font-semibold';
+        adminNavBtn.classList.remove('hidden');
+        viewBtnAdmin.classList.remove('hidden');
+        switchDashboardTab('admin');
+      } else {
+        roleBadge.textContent = 'CORPORATE SALES MEMBER';
+        roleBadge.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-semibold border border-blue-200';
+        adminNavBtn.classList.add('hidden');
+        viewBtnAdmin.classList.add('hidden');
+        switchDashboardTab('pipeline');
+      }
+
+      renderKanbanGrid();
+      renderActivityFeed();
+      renderAdminTeamTable();
+      drawPipelineRevenueChart();
+      updateMetricCounters();
+    }
+
+    function switchDashboardTab(tab) {
+      const pipelineView = document.getElementById('pipelineWorkspace');
+      const adminView = document.getElementById('adminWorkspace');
+      const btnPipe = document.getElementById('viewBtnPipeline');
+      const btnAdmin = document.getElementById('viewBtnAdmin');
+
+      if (tab === 'admin') {
+        pipelineView.classList.add('hidden');
+        adminView.classList.remove('hidden');
+
+        btnAdmin.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 text-white shadow-sm transition';
+        btnPipe.className = 'px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 transition';
+      } else {
+        adminView.classList.add('hidden');
+        pipelineView.classList.remove('hidden');
+
+        btnPipe.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white shadow-sm transition';
+        btnAdmin.className = 'px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 transition';
+        drawPipelineRevenueChart();
+      }
+    }
+
+    function performLogOut() {
+      currentLoggedInUser = null;
+      document.getElementById('dashboardView').classList.add('hidden');
+      document.getElementById('dashboardView').classList.remove('flex');
+      document.getElementById('authView').classList.remove('hidden');
+      showToast('Signed out of Client Pilot session', 'info');
+    }
+
+    /* =========================================================================
+     * 6. INTERACTIVE 5-STAGE KANBAN BOARD
+     * ========================================================================= */
+    const KANBAN_STAGES = [
+      { key: "discovery", title: "Discovery", pill: "bg-sky-50 text-sky-700" },
+      { key: "pitch", title: "Meeting / Pitch", pill: "bg-blue-50 text-blue-700" },
+      { key: "proposal", title: "Proposal Sent", pill: "bg-purple-50 text-purple-700" },
+      { key: "contract", title: "Contract Review", pill: "bg-amber-50 text-amber-700" },
+      { key: "closed", title: "Won / Closed", pill: "bg-emerald-50 text-emerald-700" }
+    ];
+
+    function renderKanbanGrid(searchQuery = '') {
+      const grid = document.getElementById('kanbanColsContainer');
+      grid.innerHTML = '';
+
+      const sortMode = document.getElementById('dealSortSelect').value;
+      let workingDeals = [...dealsList];
+
+      if (sortMode === 'val-desc') workingDeals.sort((a, b) => b.value - a.value);
+      else if (sortMode === 'val-asc') workingDeals.sort((a, b) => a.value - b.value);
+      else if (sortMode === 'company') workingDeals.sort((a, b) => a.company.localeCompare(b.company));
+
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        workingDeals = workingDeals.filter(d =>
+          d.company.toLowerCase().includes(q) ||
+          d.owner.toLowerCase().includes(q) ||
+          d.health.toLowerCase().includes(q)
+        );
+      }
+
+      KANBAN_STAGES.forEach(stage => {
+        const colDeals = workingDeals.filter(d => d.stage === stage.key);
+        const colSum = colDeals.reduce((sum, item) => sum + item.value, 0);
+
+        const colEl = document.createElement('div');
+        colEl.className = 'bg-slate-50/80 rounded-xl p-3 border border-slate-200/80 flex flex-col justify-between min-h-[440px]';
+
+        colEl.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between pb-2 mb-3 border-b border-slate-200">
+              <span class="text-xs font-bold text-slate-800">${stage.title}</span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${stage.pill}">${colDeals.length}</span>
+            </div>
+            <div class="text-[11px] font-mono text-slate-500 font-semibold mb-3">
+              $${(colSum / 1000).toLocaleString()}k
+            </div>
+
+            <div class="space-y-2.5">
+              ${colDeals.map(deal => {
+          let badge = deal.health === 'High'
+            ? '<span class="text-[9px] font-semibold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">High</span>'
+            : (deal.health === 'Medium'
+              ? '<span class="text-[9px] font-semibold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">Med</span>'
+              : '<span class="text-[9px] font-semibold text-rose-700 bg-rose-100 px-1.5 py-0.5 rounded">Risk</span>');
+
+          return `
+                  <div class="deal-card bg-white p-3 rounded-lg border border-slate-200 shadow-sm cursor-pointer" onclick="advanceDeal('${deal.id}')">
+                    <div class="flex items-start justify-between gap-1 mb-1">
+                      <span class="text-xs font-bold text-slate-900 leading-snug">${deal.company}</span>
+                      ${badge}
+                    </div>
+                    <div class="text-xs font-bold text-blue-600 font-mono mb-2">
+                      $${deal.value.toLocaleString()}
+                    </div>
+                    <div class="flex items-center justify-between text-[10px] text-slate-400 pt-1.5 border-t border-slate-100">
+                      <span>👤 ${deal.owner.split(' ')[0]}</span>
+                      <span class="text-blue-500 font-medium hover:underline">Advance →</span>
+                    </div>
+                  </div>
+                `;
+        }).join('')}
+              ${colDeals.length === 0 ? '<div class="p-4 text-center text-[11px] text-slate-400 border border-dashed border-slate-200 rounded-lg">No active deals</div>' : ''}
+            </div>
+          </div>
+
+          <div class="pt-3 mt-3 border-t border-slate-200/60">
+            <button onclick="quickAddDealInStage('${stage.key}')" class="w-full py-1.5 text-[11px] font-medium text-slate-600 hover:text-blue-600 hover:bg-white rounded border border-transparent hover:border-slate-200 transition">
+              + Quick Add
+            </button>
+          </div>
+        `;
+
+        grid.appendChild(colEl);
+      });
+    }
+
+    function advanceDeal(dealId) {
+      const deal = dealsList.find(d => d.id === dealId);
+      if (!deal) return;
+
+      const flow = ["discovery", "pitch", "proposal", "contract", "closed"];
+      const idx = flow.indexOf(deal.stage);
+
+      if (idx < flow.length - 1) {
+        deal.stage = flow[idx + 1];
+        showToast(`Moved ${deal.company} to ${deal.stage.toUpperCase()}`, 'success');
+
+        activityLog.unshift({
+          user: currentLoggedInUser ? currentLoggedInUser.name : "Admin",
+          action: `Advanced ${deal.company} to ${deal.stage}`,
+          time: "Just now"
+        });
+
+        renderKanbanGrid();
+        renderActivityFeed();
+        updateMetricCounters();
+      } else {
+        showToast(`${deal.company} is already Closed & Won!`, 'info');
+      }
+    }
+
+    function handleSearchQuery(val) {
+      renderKanbanGrid(val);
+    }
+
+    /* =========================================================================
+     * 7. ACTIVITY STREAM & REVENUE VISUALIZATION
+     * ========================================================================= */
+    function renderActivityFeed() {
+      const list = document.getElementById('activityLogsList');
+      list.innerHTML = activityLog.map(act => `
+        <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-2.5 text-xs">
+          <div class="w-2 h-2 rounded-full bg-blue-500 mt-1.5 flex-shrink-0"></div>
+          <div class="flex-1">
+            <div class="text-slate-800 font-medium leading-snug">${act.action}</div>
+            <div class="text-[10px] text-slate-400 mt-0.5 flex items-center justify-between">
+              <span>By ${act.user}</span>
+              <span class="font-mono">${act.time}</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function clearActivityStream() {
+      activityLog = [];
+      renderActivityFeed();
+      showToast('Activity logs cleared', 'info');
+    }
+
+    function drawPipelineRevenueChart() {
+      const canvas = document.getElementById('pipelineRevenueCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width = canvas.parentElement.clientWidth;
+      const h = canvas.height = canvas.parentElement.clientHeight;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // Background horizontal guidelines
+      ctx.strokeStyle = '#f1f5f9';
+      ctx.lineWidth = 1;
+      for (let y = 20; y < h; y += 35) {
+        ctx.beginPath();
+        ctx.moveTo(10, y);
+        ctx.lineTo(w - 10, y);
+        ctx.stroke();
+      }
+
+      const data = [
+        { label: "Jul", value: 840 },
+        { label: "Aug", value: 1120 },
+        { label: "Sep", value: 1450 }
+      ];
+
+      const barWidth = 36;
+      const spacing = w / (data.length + 1);
+
+      data.forEach((pt, i) => {
+        const x = (i + 1) * spacing;
+        const barHeight = (pt.value / 1600) * (h - 45);
+        const y = h - barHeight - 15;
+
+        const grad = ctx.createLinearGradient(0, y, 0, h);
+        grad.addColorStop(0, '#2563eb');
+        grad.addColorStop(1, '#60a5fa');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.roundRect(x - barWidth / 2, y, barWidth, barHeight, 6);
+        ctx.fill();
+
+        ctx.fillStyle = '#64748b';
+        ctx.font = '10px Plus Jakarta Sans';
+        ctx.textAlign = 'center';
+        ctx.fillText(`$${pt.value}k`, x, y - 6);
+      });
+    }
+
+    function updateMetricCounters() {
+      const total = dealsList.reduce((acc, d) => acc + d.value, 0);
+      document.getElementById('totalPipelineSum').textContent = `$${total.toLocaleString()}`;
+      document.getElementById('activeDealsCount').textContent = `${dealsList.length} Deals`;
+    }
+
+    /* =========================================================================
+     * 8. ADMIN TEAM ROSTER TABLE
+     * ========================================================================= */
+    function renderAdminTeamTable() {
+      const tbody = document.getElementById('adminTeamTableBody');
+      const team = [
+        ...EXECUTIVE_ADMINS,
+        { id: "usr-04", name: "David Chen", email: "david.chen@clientpilot.com", role: "Solutions Consultant", title: "Solutions Consultant", clearance: "Tier-2 Standard", dealsManaged: 22, status: "Active" },
+        { id: "usr-05", name: "Rachel Adams", email: "rachel.adams@clientpilot.com", role: "Account Executive", title: "Account Exec", clearance: "Tier-2 Standard", dealsManaged: 19, status: "Active" }
+      ];
+
+      tbody.innerHTML = team.map(m => `
+        <tr class="hover:bg-slate-50/80 transition">
+          <td class="py-3 px-3">
+            <div class="font-bold text-slate-900">${m.name}</div>
+            <div class="text-[11px] text-slate-400">${m.role}</div>
+          </td>
+          <td class="py-3 px-3 font-mono text-slate-600">${m.email}</td>
+          <td class="py-3 px-3">
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${m.clearance.includes('Tier-1') ? 'bg-purple-50 text-purple-700 border border-purple-200' : 'bg-blue-50 text-blue-700 border border-blue-200'}">
+              ${m.clearance}
+            </span>
+          </td>
+          <td class="py-3 px-3 font-bold text-slate-800">${m.dealsManaged}</td>
+          <td class="py-3 px-3">
+            <span class="text-emerald-600 flex items-center gap-1.5 font-medium">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> ${m.status || 'Active'}
+            </span>
+          </td>
+          <td class="py-3 px-3 text-right">
+            <button onclick="showToast('Audit report dispatched for ${m.name}', 'info')" class="text-blue-600 hover:underline font-medium">Audit</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function promptProvisionNewSeat() {
+      showToast('Enterprise Seat Provisioning portal active. Input corporate email.', 'info');
+      focusCreateAccount();
+      document.getElementById('dashboardView').classList.add('hidden');
+      document.getElementById('dashboardView').classList.remove('flex');
+      document.getElementById('authView').classList.remove('hidden');
+    }
+
+    /* =========================================================================
+     * 9. NEW DEAL CREATION MODAL
+     * ========================================================================= */
+    function openDealCreationModal() {
+      const m = document.getElementById('dealCreateModal');
+      m.classList.remove('hidden');
+      m.classList.add('flex');
+    }
+
+    function closeDealModal() {
+      const m = document.getElementById('dealCreateModal');
+      m.classList.add('hidden');
+      m.classList.remove('flex');
+    }
+
+    function quickAddDealInStage(stg) {
+      document.getElementById('dealInputStage').value = stg;
+      openDealCreationModal();
+    }
+
+    function submitDealForm(e) {
+      e.preventDefault();
+      const comp = document.getElementById('dealInputCompany').value.trim();
+      const val = parseInt(document.getElementById('dealInputValue').value) || 75000;
+      const stage = document.getElementById('dealInputStage').value;
+      const health = document.getElementById('dealInputHealth').value;
+      const owner = document.getElementById('dealInputOwner').value;
+
+      dealsList.push({
+        id: `D-${100 + dealsList.length + 1}`,
+        company: comp,
+        value: val,
+        stage: stage,
+        health: health,
+        owner: owner
+      });
+
+      activityLog.unshift({
+        user: currentLoggedInUser ? currentLoggedInUser.name : owner,
+        action: `Logged new deal: ${comp} ($${val.toLocaleString()})`,
+        time: "Just now"
+      });
+
+      closeDealModal();
+      document.getElementById('dealInputCompany').value = '';
+      document.getElementById('dealInputValue').value = '';
+
+      renderKanbanGrid();
+      renderActivityFeed();
+      updateMetricCounters();
+      showToast(`Deal added: ${comp}`, 'success');
+    }
+
+    /* =========================================================================
+     * 10. NOTIFICATION SYSTEM & UTILITIES
+     * ========================================================================= */
+    function showToast(msg, type = 'info') {
+      const toast = document.getElementById('toastNotification');
+      const inner = document.getElementById('toastInner');
+      const text = document.getElementById('toastMessage');
+      const icon = document.getElementById('toastIcon');
+
+      text.textContent = msg;
+
+      if (type === 'error') {
+        inner.className = 'flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-2xl text-xs sm:text-sm font-medium border bg-rose-950/90 text-rose-100 border-rose-600 backdrop-blur-md';
+        icon.innerHTML = '⚠️';
+      } else if (type === 'success') {
+        inner.className = 'flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-2xl text-xs sm:text-sm font-medium border bg-emerald-950/90 text-emerald-100 border-emerald-500 backdrop-blur-md';
+        icon.innerHTML = '✅';
+      } else {
+        inner.className = 'flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-2xl text-xs sm:text-sm font-medium border bg-slate-900/90 text-sky-100 border-sky-500 backdrop-blur-md';
+        icon.innerHTML = 'ℹ️';
+      }
+
+      toast.style.transform = 'translateY(0)';
+      setTimeout(() => {
+        toast.style.transform = 'translateY(-140%)';
+      }, 3600);
+    }
+
+    function togglePasswordDisplay(id) {
+      const inp = document.getElementById(id);
+      inp.type = inp.type === 'password' ? 'text' : 'password';
+    }
+
+    function focusCreateAccount() {
+      const section = document.getElementById('registerFormArea');
+      section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.getElementById('regFullName').focus();
+      showToast('Enter your @clientpilot.com corporate credentials to register', 'info');
+    }
+
+    function handleForgotPassword() {
+      const mail = document.getElementById('loginEmail').value.trim();
+      if (!mail) {
+        showToast('Please type your @clientpilot.com email address first.', 'info');
+      } else {
+        showToast(`Reset passkey dispatched to ${mail}`, 'success');
+      }
+    }
+
+    function showNotificationToast() {
+      showToast('2 enterprise deal milestones achieved this week.', 'info');
+    }
+
+    function openComplianceModal() {
+      document.getElementById('complianceModal').classList.remove('hidden');
+      document.getElementById('complianceModal').classList.add('flex');
+    }
+
+    function closeComplianceModal() {
+      document.getElementById('complianceModal').classList.add('hidden');
+      document.getElementById('complianceModal').classList.remove('flex');
+    }
+
+    /* =========================================================================
+     * 11. AMBIENT BACKGROUND CANVAS
+     * ========================================================================= */
+    const ambCanvas = document.getElementById('ambientCanvas');
+    const ambCtx = ambCanvas.getContext('2d');
+    let cWidth, cHeight, nodes = [];
+
+    function initAmbientCanvas() {
+      cWidth = ambCanvas.width = window.innerWidth;
+      cHeight = ambCanvas.height = window.innerHeight;
+      nodes = [];
+      const total = Math.floor(Math.min(cWidth, cHeight) / 25);
+      for (let i = 0; i < total; i++) {
+        nodes.push({
+          x: Math.random() * cWidth,
+          y: Math.random() * cHeight,
+          vx: (Math.random() - 0.5) * 0.35,
+          vy: (Math.random() - 0.5) * 0.35,
+          r: Math.random() * 1.5 + 1
+        });
+      }
+    }
+
+    function animateAmbient() {
+      ambCtx.clearRect(0, 0, cWidth, cHeight);
+
+      for (let i = 0; i < nodes.length; i++) {
+        const n1 = nodes[i];
+        n1.x += n1.vx;
+        n1.y += n1.vy;
+
+        if (n1.x < 0 || n1.x > cWidth) n1.vx *= -1;
+        if (n1.y < 0 || n1.y > cHeight) n1.vy *= -1;
+
+        ambCtx.fillStyle = 'rgba(186, 230, 253, 0.4)';
+        ambCtx.beginPath();
+        ambCtx.arc(n1.x, n1.y, n1.r, 0, Math.PI * 2);
+        ambCtx.fill();
+
+        for (let j = i + 1; j < nodes.length; j++) {
+          const n2 = nodes[j];
+          const dist = Math.hypot(n1.x - n2.x, n1.y - n2.y);
+          if (dist < 110) {
+            ambCtx.strokeStyle = `rgba(96, 165, 250, ${0.14 * (1 - dist / 110)})`;
+            ambCtx.lineWidth = 0.6;
+            ambCtx.beginPath();
+            ambCtx.moveTo(n1.x, n1.y);
+            ambCtx.lineTo(n2.x, n2.y);
+            ambCtx.stroke();
+          }
+        }
+      }
+      requestAnimationFrame(animateAmbient);
+    }
+
+    window.addEventListener('resize', () => {
+      initAmbientCanvas();
+      if (currentLoggedInUser) drawPipelineRevenueChart();
+    });
+
+    window.addEventListener('load', () => {
+      initAmbientCanvas();
+      animateAmbient();
+    });
+  </script>
+</body>
+
+</html>

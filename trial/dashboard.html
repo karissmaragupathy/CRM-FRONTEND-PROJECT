@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Keystone CRM — Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+</head>
+
+<body>
+    <div id="shell"></div>
+
+    <script src="app.js"></script>
+    <script>
+        const session = requireAuth();
+        const clients = getClients();
+        const tickets = getTickets();
+
+        const totalMrr = clients.filter(c => c.status !== "churned").reduce((s, c) => s + c.mrr, 0);
+        const openTickets = tickets.filter(t => t.status !== "resolved").length;
+        const atRisk = clients.filter(c => c.status === "at-risk" || c.status === "watch").length;
+
+        const allActivity = clients.flatMap(c => c.activity.map(a => ({ ...a, client: c.name, clientId: c.id })))
+            .sort((a, b) => new Date(b.date) - new Date(a.date))
+            .slice(0, 6);
+
+        const activityHtml = allActivity.map(a => `
+    <li>
+      <div class="meta"><span class="type">${a.type}</span> · ${a.client} · ${formatDate(a.date)}</div>
+      <div>${a.note}</div>
+    </li>`).join("");
+
+        document.getElementById("shell").innerHTML = `
+    ${renderShellStart("dashboard.html", session)}
+    <div class="page-head">
+      <div>
+        <h1>Dashboard</h1>
+        <p>Welcome back, ${session.name.split(" ")[0]}. Here's how accounts are trending.</p>
+      </div>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="label">Active MRR</div>
+        <div class="value">${formatCurrency(totalMrr)}</div>
+        <div class="sub">Across ${clients.filter(c => c.status !== "churned").length} active clients</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Total clients</div>
+        <div class="value">${clients.length}</div>
+        <div class="sub">${clients.filter(c => c.status === "healthy").length} healthy</div>
+      </div>
+      <div class="kpi warn">
+        <div class="label">Open tickets</div>
+        <div class="value">${openTickets}</div>
+        <div class="sub">of ${tickets.length} total</div>
+      </div>
+      <div class="kpi danger">
+        <div class="label">Accounts needing attention</div>
+        <div class="value">${atRisk}</div>
+        <div class="sub">at-risk or on watch</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel">
+        <h3>Revenue trend</h3>
+        <canvas id="revenueChart" height="140"></canvas>
+      </div>
+      <div class="panel">
+        <h3>Recent activity</h3>
+        <ul class="timeline">${activityHtml || '<li class="empty">No activity yet.</li>'}</ul>
+      </div>
+    </div>
+    ${SHELL_END}
+  `;
+
+        const months = ["Apr", "May", "Jun", "Jul", "Aug", "Sep"];
+        const revenueSeries = [5200, 5450, 5600, 6100, 6400, totalMrr];
+
+        new Chart(document.getElementById("revenueChart"), {
+            type: "line",
+            data: {
+                labels: months,
+                datasets: [{
+                    label: "MRR",
+                    data: revenueSeries,
+                    borderColor: "#3e6259",
+                    backgroundColor: "rgba(62,98,89,0.1)",
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 3,
+                }],
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: { y: { ticks: { callback: (v) => "$" + v } } },
+            },
+        });
+    </script>
+</body>
+
+</html>

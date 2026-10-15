@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NexaFlow — Request SecureStack Access</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+    <div class="auth-wrap">
+        <div class="auth-brand">
+            <div class="mark">NexaFlow</div>
+            <div>
+                <h1>Request SecureStack Access</h1>
+                <p>Only SecureStack employees can access NexaFlow. Your company email is required.</p>
+            </div>
+            <div class="foot">Requests are reviewed by an administrator before access is granted.</div>
+        </div>
+
+        <div class="auth-form">
+            <div class="auth-card">
+                <form id="request-form">
+                    <div class="field">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" required />
+                    </div>
+                    <div class="field">
+                        <label for="email">Work Email</label>
+                        <input type="email" id="email" required placeholder="you@securestack.com" />
+                    </div>
+                    <div class="field">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" required />
+                    </div>
+                    <div class="field">
+                        <label for="confirm">Confirm Password</label>
+                        <input type="password" id="confirm" required />
+                    </div>
+                    <div class="field">
+                        <label for="department">Department</label>
+                        <select id="department" required>
+                            <option value="">Select department</option>
+                            <option>Sales</option>
+                            <option>Sales Operations</option>
+                            <option>Marketing</option>
+                            <option>Customer Success</option>
+                            <option>Management</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="jobRole">Job Role</label>
+                        <select id="jobRole" required>
+                            <option value="">Select job role</option>
+                            <option>Sales Representative</option>
+                            <option>Sales Manager</option>
+                            <option>Account Executive</option>
+                            <option>Sales Operations</option>
+                            <option>Administrator</option>
+                        </select>
+                    </div>
+                    <button class="btn accent" type="submit" style="width:100%">Submit Request</button>
+                </form>
+                <p class="switch">Already have an account? <a href="index.html">Sign in</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+    <script>
+        document.getElementById("request-form").addEventListener("submit", function (e) {
+            e.preventDefault();
+            const result = requestAccess({
+                name: document.getElementById("name").value,
+                email: document.getElementById("email").value,
+                password: document.getElementById("password").value,
+                confirmPassword: document.getElementById("confirm").value,
+                department: document.getElementById("department").value,
+                jobRole: document.getElementById("jobRole").value,
+            });
+
+            if (!result.ok) {
+                toast(result.message, "error");
+                return;
+            }
+            document.getElementById("request-form").reset();
+            toast("Access request submitted. Your SecureStack account is awaiting approval.", "success");
+        });
+    </script>
+</body>
+
+</html>

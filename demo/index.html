@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NexaFlow — Sign in</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+    <div class="auth-wrap">
+        <div class="auth-brand">
+            <div class="mark">NexaFlow</div>
+            <div>
+                <h1>SecureStack Sales CRM</h1>
+                <p>Sign in with your SecureStack account. Access is limited to verified company email addresses.</p>
+            </div>
+            <div class="foot">Frontend prototype — domain checks are simulated, not a security boundary.</div>
+        </div>
+
+        <div class="auth-form">
+            <div class="auth-card">
+                <h2>Sign in</h2>
+                <form id="login-form">
+                    <div class="field">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" required placeholder="Enter your SecureStack email" />
+                    </div>
+                    <div class="field">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" required placeholder="Enter password" />
+                    </div>
+                    <button class="btn accent" type="submit" style="width:100%">Sign In</button>
+                </form>
+                <p class="switch">Don't have an account? <a href="request-access.html">Request Access</a></p>
+                <p class="switch" style="margin-top:.4em">Demo account: alex@securestack.com / demo123</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+    <script>
+        document.getElementById("login-form").addEventListener("submit", function (e) {
+            e.preventDefault();
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            const result = login(email, password);
+            if (result.ok) {
+                window.location.href = "dashboard.html";
+            } else {
+                toast(result.message, "error");
+            }
+        });
+    </script>
+</body>
+
+</html>

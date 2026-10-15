@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NexaFlow — Leads</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <div id="shell"></div>
+
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+    <script>
+        const session = requireAuth();
+
+        function render() {
+            const leads = getLeads();
+            const rows = leads.map(l => `
+      <tr>
+        <td>${l.name}</td>
+        <td>${l.company}</td>
+        <td>${l.email}</td>
+        <td><span class="badge ${l.status}">${l.status}</span></td>
+        <td>${l.owner}</td>
+        <td>
+          <select onchange="updateStatus('${l.id}', this.value)">
+            ${["new", "contacted", "qualified", "lost"].map(s => `<option value="${s}" ${s === l.status ? "selected" : ""}>${s}</option>`).join("")}
+          </select>
+        </td>
+      </tr>`).join("");
+
+            document.getElementById("shell").innerHTML = `
+      ${renderShellStart("leads.html", session)}
+      <div class="page-head">
+        <div><h1>Leads</h1><p>Prospective customers not yet converted to an account.</p></div>
+        <button class="btn accent" onclick="document.getElementById('modal').classList.remove('hidden')">Add Lead</button>
+      </div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Name</th><th>Company</th><th>Email</th><th>Status</th><th>Owner</th><th>Update status</th></tr></thead>
+          <tbody>${rows || `<tr><td colspan="6" class="empty">No leads yet.</td></tr>`}</tbody>
+        </table>
+      </div>
+      ${SHELL_END}
+
+      <div class="modal-backdrop hidden" id="modal">
+        <div class="modal">
+          <h3>Add Lead</h3>
+          <form id="lead-form">
+            <div class="field"><label>Name</label><input type="text" id="f-name" required /></div>
+            <div class="field"><label>Company</label><input type="text" id="f-company" required /></div>
+            <div class="field"><label>Email</label><input type="email" id="f-email" required /></div>
+            <div style="display:flex;gap:.6rem;justify-content:flex-end">
+              <button type="button" class="btn secondary" onclick="document.getElementById('modal').classList.add('hidden')">Cancel</button>
+              <button type="submit" class="btn accent">Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+
+            document.getElementById("lead-form").addEventListener("submit", function (e) {
+                e.preventDefault();
+                const leads = getLeads();
+                leads.push({
+                    id: uid("lead"),
+                    name: document.getElementById("f-name").value,
+                    company: document.getElementById("f-company").value,
+                    email: document.getElementById("f-email").value,
+                    status: "new",
+                    owner: session.name,
+                    created: new Date().toISOString().slice(0, 10),
+                });
+                setLeads(leads);
+                toast("Lead added.", "success");
+                render();
+            });
+        }
+
+        function updateStatus(id, status) {
+            const leads = getLeads();
+            const lead = leads.find(l => l.id === id);
+            if (lead) lead.status = status;
+            setLeads(leads);
+            render();
+        }
+
+        render();
+    </script>
+</body>
+
+</html>

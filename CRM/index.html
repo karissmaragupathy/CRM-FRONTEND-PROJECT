@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aether Cloud Ops | Client CRM Portal</title>
+    <style>
+        :root {
+            --bg: #090d16;
+            --card-bg: #111827;
+            --card-inner: #161f30;
+            --border: #1f293d;
+            --border-light: #2d3b55;
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
+            --text: #f3f4f6;
+            --muted: #94a3af;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            transition: max-width 0.3s ease;
+        }
+
+        .container.dashboard-mode {
+            max-width: 860px;
+            padding: 32px;
+        }
+
+        /* Auth Switcher */
+        .auth-toggle {
+            display: flex;
+            background: #06090e;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 4px;
+            margin-bottom: 20px;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 8px;
+            background: transparent;
+            border: none;
+            color: var(--muted);
+            font-weight: 600;
+            font-size: 13px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .toggle-btn.active {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        h2 {
+            font-size: 20px;
+            margin-bottom: 6px;
+        }
+
+        p.sub {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 18px;
+            line-height: 1.4;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 5px;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px 12px;
+            background: #06090e;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 13px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 11px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border-light);
+            color: var(--muted);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .btn-secondary:hover {
+            color: #fff;
+            border-color: var(--muted);
+        }
+
+        .alert {
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            margin-top: 12px;
+            display: none;
+            line-height: 1.4;
+        }
+
+        .alert-err {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid var(--danger);
+            color: #fca5a5;
+        }
+
+        .alert-suc {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid var(--success);
+            color: #6ee7b7;
+        }
+
+        .cred-table-box {
+            margin-top: 20px;
+            padding: 12px;
+            background: #06090e;
+            border: 1px dashed var(--border);
+            border-radius: 6px;
+            font-size: 11px;
+            color: var(--muted);
+            max-height: 140px;
+            overflow-y: auto;
+        }
+
+        .cred-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 6px;
+            text-align: left;
+        }
+
+        .cred-table th,
+        .cred-table td {
+            padding: 4px 6px;
+            border-bottom: 1px solid #161f30;
+        }
+
+        .cred-table th {
+            color: #fff;
+        }
+
+        /* ==========================================================================
+       DASHBOARD STYLING
+       ========================================================================== */
+        .dash-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 18px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+
+        .client-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--success);
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .dot {
+            width: 7px;
+            height: 7px;
+            background: var(--success);
+            border-radius: 50%;
+        }
+
+        /* Metric Tiles */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--card-inner);
+            border: 1px solid var(--border);
+            padding: 14px;
+            border-radius: 8px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        /* Roadmap & Milestones Table */
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #60a5fa;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .roadmap-card {
+            background: var(--card-inner);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .deliverables-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .deliverables-table th {
+            text-align: left;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--muted);
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .deliverables-table td {
+            padding: 12px 6px;
+            border-bottom: 1px solid #1c273d;
+            color: #e2e8f0;
+        }
+
+        .tag-complete {
+            color: var(--success);
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .tag-progress {
+            color: var(--warning);
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .progress-track {
+            background: #090d16;
+            border-radius: 6px;
+            height: 8px;
+            overflow: hidden;
+            margin-top: 6px;
+        }
+
+        .progress-fill {
+            background: var(--accent);
+            height: 100%;
+            width: 68%;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="mainContainer" class="container">
+
+        <!-- Tab Controls -->
+        <div id="authNav" class="auth-toggle">
+            <button id="tabLogin" class="toggle-btn active" onclick="showForm('login')">Client Login</button>
+            <button id="tabSignup" class="toggle-btn" onclick="showForm('signup')">Sign Up (Activate Deal)</button>
+        </div>
+
+        <!-- 1. LOGIN SCREEN -->
+        <div id="loginSection">
+            <h2>Client Workspace Login</h2>
+            <p class="sub">Log in to view your infrastructure and cloud migration deliverables.</p>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Client Email</label>
+                    <input type="text" id="loginEmail" value="sample@1" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPass">Password</label>
+                    <input type="password" id="loginPass" value="pass1" required>
+                </div>
+                <button type="submit" class="btn">Log In to Workspace</button>
+                <div id="loginAlert" class="alert alert-err"></div>
+            </form>
+
+            <div class="cred-table-box">
+                <strong style="color: #fff;">Pre-Activated Demo Accounts (Click & Login):</strong>
+                <table class="cred-table">
+                    <tr>
+                        <th>Email</th>
+                        <th>Password</th>
+                        <th>Client</th>
+                    </tr>
+                    <tr>
+                        <td>sample@1</td>
+                        <td>pass1</td>
+                        <td>Client One Ltd</td>
+                    </tr>
+                    <tr>
+                        <td>sample@2</td>
+                        <td>pass2</td>
+                        <td>Client Two Corp</td>
+                    </tr>
+                    <tr>
+                        <td>sample@3</td>
+                        <td>pass3</td>
+                        <td>Client Three Systems</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 2. SIGN-UP / ACTIVATION SCREEN -->
+        <div id="signupSection" class="hidden">
+            <h2>Contract Sign-Up</h2>
+            <p class="sub">Registration is restricted to closed enterprise deals.</p>
+
+            <form id="signupForm">
+                <div class="form-group">
+                    <label for="signEmail">Client Email</label>
+                    <input type="text" id="signEmail" placeholder="sample@6" required>
+                </div>
+                <div class="form-group">
+                    <label for="signDeal">Contract / Deal Reference ID</label>
+                    <input type="text" id="signDeal" placeholder="DEAL-6" required>
+                </div>
+                <div class="form-group">
+                    <label for="signPass">Create Secure Password</label>
+                    <input type="password" id="signPass" placeholder="e.g., pass6" required>
+                </div>
+                <button type="submit" class="btn">Verify Deal & Register</button>
+                <div id="signupAlert" class="alert"></div>
+            </form>
+
+            <div class="cred-table-box">
+                <strong style="color: #fff;">Unregistered Deals for Sign-Up:</strong>
+                <table class="cred-table">
+                    <tr>
+                        <th>Email</th>
+                        <th>Deal ID</th>
+                        <th>Client Name</th>
+                    </tr>
+                    <tr>
+                        <td>sample@6</td>
+                        <td>DEAL-6</td>
+                        <td>Client Six Enterprises</td>
+                    </tr>
+                    <tr>
+                        <td>sample@7</td>
+                        <td>DEAL-7</td>
+                        <td>Client Seven Networks</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 3. POST-LOGIN CRM CLIENT DASHBOARD (WHAT OPENS NEXT) -->
+        <div id="dashboardSection" class="hidden">
+
+            <!-- Workspace Header -->
+            <div class="dash-topbar">
+                <div>
+                    <span
+                        style="font-size:11px; text-transform:uppercase; color:#60a5fa; font-weight:700; letter-spacing:1px;">Client
+                        Cloud Portal</span>
+                    <h2 id="dashOrg" style="margin-top:2px;">Enterprise Client</h2>
+                </div>
+                <div class="client-badge">
+                    <span class="dot"></span>
+                    <span>SOW Contract Active</span>
+                </div>
+            </div>
+
+            <!-- Top KPI Summary Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Verified Deal ID</div>
+                    <div class="stat-value" id="dashDeal" style="color:#60a5fa">--</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Infrastructure Health</div>
+                    <div class="stat-value" style="color:var(--success)">99.98% Uptime</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Active Cloud Cluster</div>
+                    <div class="stat-value">AWS us-east-1</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Lead Architect</div>
+                    <div class="stat-value">Sarah Chen (DevOps)</div>
+                </div>
+            </div>
+
+            <!-- Overall Project Progress -->
+            <div class="roadmap-card">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span class="stat-label" style="margin:0;">Project Milestone Completion</span>
+                    <span style="font-size:12px; font-weight:700; color:#60a5fa;">68% Completed</span>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-fill"></div>
+                </div>
+            </div>
+
+            <!-- Active Deliverables Roadmap Table -->
+            <div class="roadmap-card">
+                <div class="section-title">
+                    <span>Active Sprint Roadmap</span>
+                    <span style="font-size:11px; color:var(--muted); text-transform:none;">Sprint Cycle: Q3
+                        Migration</span>
+                </div>
+
+                <table class="deliverables-table">
+                    <thead>
+                        <tr>
+                            <th>Deliverable Scope</th>
+                            <th>Target Tech</th>
+                            <th>Status</th>
+                            <th>SLA Sign-off</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>VPC Peering & Network Topology</td>
+                            <td>Terraform / AWS VPC</td>
+                            <td><span class="tag-complete">✓ Completed</span></td>
+                            <td>Approved</td>
+                        </tr>
+                        <tr>
+                            <td>PostgreSQL Cluster Sharding</td>
+                            <td>Amazon Aurora RDS</td>
+                            <td><span class="tag-complete">✓ Completed</span></td>
+                            <td>Approved</td>
+                        </tr>
+                        <tr>
+                            <td>Microservice Dockerization & EKS Mount</td>
+                            <td>Kubernetes (K8s)</td>
+                            <td><span class="tag-progress">● In Progress</span></td>
+                            <td>Under Review</td>
+                        </tr>
+                        <tr>
+                            <td>Automated CI/CD Pipeline Deployment</td>
+                            <td>GitHub Actions & ArgoCD</td>
+                            <td><span style="color:var(--muted)">○ Queued</span></td>
+                            <td>Pending Sprint 4</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Footer Actions -->
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <button class="btn-secondary"
+                    onclick="alert('Downloading signed Master Services Agreement (MSA) summary...')">
+                    📄 Download SLA Agreement
+                </button>
+                <button class="btn-secondary" onclick="logout()">
+                    Terminate Session (Log Out)
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- SCRIPT LOGIC -->
+    <script>
+        // 10 DEFAULT CUSTOMERS
+        const defaultTenCustomers = [
+            { email: "sample@1", dealId: "DEAL-1", clientName: "Client One Ltd", registered: true, password: "pass1" },
+            { email: "sample@2", dealId: "DEAL-2", clientName: "Client Two Corp", registered: true, password: "pass2" },
+            { email: "sample@3", dealId: "DEAL-3", clientName: "Client Three Systems", registered: true, password: "pass3" },
+            { email: "sample@4", dealId: "DEAL-4", clientName: "Client Four Tech", registered: true, password: "pass4" },
+            { email: "sample@5", dealId: "DEAL-5", clientName: "Client Five Global", registered: true, password: "pass5" },
+            { email: "sample@6", dealId: "DEAL-6", clientName: "Client Six Enterprises", registered: false, password: "" },
+            { email: "sample@7", dealId: "DEAL-7", clientName: "Client Seven Networks", registered: false, password: "" },
+            { email: "sample@8", dealId: "DEAL-8", clientName: "Client Eight Analytics", registered: false, password: "" },
+            { email: "sample@9", dealId: "DEAL-9", clientName: "Client Nine Cyber", registered: false, password: "" },
+            { email: "sample@10", dealId: "DEAL-10", clientName: "Client Ten Cloud", registered: false, password: "" }
+        ];
+
+        // Persist to localStorage
+        localStorage.setItem("aether_deals", JSON.stringify(defaultTenCustomers));
+
+        function getDeals() {
+            return JSON.parse(localStorage.getItem("aether_deals"));
+        }
+
+        function saveDeals(deals) {
+            localStorage.setItem("aether_deals", JSON.stringify(deals));
+        }
+
+        // Toggle Screen Tabs
+        function showForm(mode) {
+            document.getElementById("loginAlert").style.display = "none";
+            document.getElementById("signupAlert").style.display = "none";
+
+            if (mode === 'login') {
+                document.getElementById("tabLogin").classList.add("active");
+                document.getElementById("tabSignup").classList.remove("active");
+                document.getElementById("loginSection").classList.remove("hidden");
+                document.getElementById("signupSection").classList.add("hidden");
+            } else {
+                document.getElementById("tabSignup").classList.add("active");
+                document.getElementById("tabLogin").classList.remove("active");
+                document.getElementById("signupSection").classList.remove("hidden");
+                document.getElementById("loginSection").classList.add("hidden");
+            }
+        }
+
+        // Sign-Up (Activation) Logic
+        document.getElementById("signupForm").addEventListener("submit", (e) => {
+            e.preventDefault();
+            const email = document.getElementById("signEmail").value.trim().toLowerCase();
+            const dealId = document.getElementById("signDeal").value.trim().toUpperCase();
+            const pass = document.getElementById("signPass").value;
+            const alertBox = document.getElementById("signupAlert");
+
+            const deals = getDeals();
+            const deal = deals.find(d => d.email === email && d.dealId === dealId);
+
+            if (!deal) {
+                alertBox.className = "alert alert-err";
+                alertBox.textContent = "Registration rejected: No active contract matched this Email and Deal ID.";
+                alertBox.style.display = "block";
+                return;
+            }
+
+            if (deal.registered) {
+                alertBox.className = "alert alert-err";
+                alertBox.textContent = "Account already registered for this deal. Please proceed to Login.";
+                alertBox.style.display = "block";
+                return;
+            }
+
+            deal.registered = true;
+            deal.password = pass;
+            saveDeals(deals);
+
+            alertBox.className = "alert alert-suc";
+            alertBox.textContent = "Deal verified! Account registered successfully. Switching to Login...";
+            alertBox.style.display = "block";
+
+            setTimeout(() => {
+                showForm('login');
+                document.getElementById("loginEmail").value = email;
+                document.getElementById("loginPass").value = pass;
+            }, 1200);
+        });
+
+        // Login Logic
+        document.getElementById("loginForm").addEventListener("submit", (e) => {
+            e.preventDefault();
+            const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+            const pass = document.getElementById("loginPass").value;
+            const alertBox = document.getElementById("loginAlert");
+
+            const deals = getDeals();
+            const user = deals.find(d => d.email === email);
+
+            if (!user) {
+                alertBox.textContent = "No registered enterprise account found with this email.";
+                alertBox.style.display = "block";
+                return;
+            }
+
+            if (!user.registered) {
+                alertBox.textContent = "Contract found, but account has not been activated yet. Please click 'Sign Up (Activate Deal)' first.";
+                alertBox.style.display = "block";
+                return;
+            }
+
+            if (user.password !== pass) {
+                alertBox.textContent = "Incorrect password credentials.";
+                alertBox.style.display = "block";
+                return;
+            }
+
+            // Successful Login: Mount Dashboard
+            alertBox.style.display = "none";
+            document.getElementById("authNav").classList.add("hidden");
+            document.getElementById("loginSection").classList.add("hidden");
+
+            const mainContainer = document.getElementById("mainContainer");
+            mainContainer.classList.add("dashboard-mode");
+
+            document.getElementById("dashboardSection").classList.remove("hidden");
+            document.getElementById("dashOrg").textContent = user.clientName;
+            document.getElementById("dashDeal").textContent = user.dealId;
+        });
+
+        // Logout Logic
+        function logout() {
+            const mainContainer = document.getElementById("mainContainer");
+            mainContainer.classList.remove("dashboard-mode");
+
+            document.getElementById("dashboardSection").classList.add("hidden");
+            document.getElementById("authNav").classList.remove("hidden");
+            showForm('login');
+        }
+    </script>
+</body>
+
+</html>

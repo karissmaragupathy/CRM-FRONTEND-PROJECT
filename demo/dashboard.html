@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NexaFlow — Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+</head>
+
+<body>
+    <div id="shell"></div>
+
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+    <script>
+        const session = requireAuth();
+        const leads = getLeads();
+        const deals = getDeals();
+        const activities = getActivities();
+
+        const openDeals = deals.filter(d => d.stage !== "won" && d.stage !== "lost");
+        const pipelineValue = openDeals.reduce((s, d) => s + d.value, 0);
+        const wonValue = deals.filter(d => d.stage === "won").reduce((s, d) => s + d.value, 0);
+        const newLeads = leads.filter(l => l.status === "new").length;
+
+        const recent = [...activities].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 6);
+        const recentHtml = recent.map(a => `
+    <li style="padding:.7em 0;border-bottom:1px solid var(--line)">
+      <div style="font-size:.78rem;color:var(--ink-faint)">${a.type} · ${a.relatedTo} · ${formatDate(a.date)}</div>
+      <div>${a.notes}</div>
+    </li>`).join("");
+
+        const stageCounts = {
+            prospecting: deals.filter(d => d.stage === "prospecting").length,
+            proposal: deals.filter(d => d.stage === "proposal").length,
+            negotiation: deals.filter(d => d.stage === "negotiation").length,
+            won: deals.filter(d => d.stage === "won").length,
+        };
+
+        document.getElementById("shell").innerHTML = `
+    ${renderShellStart("dashboard.html", session)}
+    <div class="page-head">
+      <div>
+        <h1>Dashboard</h1>
+        <p>Welcome back, ${session.name.split(" ")[0]}.</p>
+      </div>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="label">Open pipeline</div>
+        <div class="value">${formatCurrency(pipelineValue)}</div>
+        <div class="sub">${openDeals.length} active deals</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Closed-won value</div>
+        <div class="value">${formatCurrency(wonValue)}</div>
+        <div class="sub">${deals.filter(d => d.stage === "won").length} deals won</div>
+      </div>
+      <div class="kpi warn">
+        <div class="label">New leads</div>
+        <div class="value">${newLeads}</div>
+        <div class="sub">of ${leads.length} total leads</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Accounts</div>
+        <div class="value">${getAccounts().length}</div>
+        <div class="sub">${getContacts().length} contacts on file</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel">
+        <h3>Pipeline by stage</h3>
+        <canvas id="pipelineChart" height="140"></canvas>
+      </div>
+      <div class="panel">
+        <h3>Recent activity</h3>
+        <ul style="list-style:none;margin:0;padding:0">${recentHtml || '<li class="empty">No activity yet.</li>'}</ul>
+      </div>
+    </div>
+    ${SHELL_END}
+  `;
+
+        new Chart(document.getElementById("pipelineChart"), {
+            type: "bar",
+            data: {
+                labels: ["Prospecting", "Proposal", "Negotiation", "Won"],
+                datasets: [{
+                    data: [stageCounts.prospecting, stageCounts.proposal, stageCounts.negotiation, stageCounts.won],
+                    backgroundColor: ["#c9873b", "#c9873b", "#1f8a8c", "#2f7d5c"],
+                }],
+            },
+            options: { plugins: { legend: { display: false } }, scales: { y: { ticks: { stepSize: 1 } } } },
+        });
+    </script>
+</body>
+
+</html>

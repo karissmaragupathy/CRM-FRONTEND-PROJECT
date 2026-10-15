@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grid Layout</title>
+    <style>
+        .container {
+            display: grid;
+            border: 1px salmon;
+            grid-row: 25% 25% 25% 25%;
+            grid-column: 25% 25% 25% 25%;
+            gap: 2px;
+
+        }
+
+        .header {
+            background-color: aquamarine;
+            height: 25vh;
+            grid-row: 1/2;
+            grid-column: 1/5;
+        }
+
+        .sb1 {
+            background-color: rgb(0, 183, 255);
+            height: 25vh;
+            grid-row: 2/3;
+            grid-column: 1/2;
+
+        }
+
+        .sb2 {
+            background-color: rgb(0, 255, 166);
+            height: 25vh;
+            grid-row: 2/3;
+            grid-column: 2/3;
+
+        }
+
+        .sb3 {
+            background-color: rgb(0, 183, 255);
+            height: 25vh;
+            grid-row: 2/3;
+            grid-column: 3/4;
+
+        }
+
+        .sb {
+            background-color: rgb(56, 230, 345);
+            height: 25vh;
+            grid-row: 2/4;
+            grid-column: 4/5;
+        }
+
+        .main {
+            background-color: rgb(220, 239, 91);
+            height: 25vh;
+            grid-row: 3/4;
+            grid-column: 1/4;
+        }
+
+        .footer {
+            background-color: rgb(53, 20, 56);
+            height: 25vh;
+            grid-row: 4/5;
+            grid-column: 1/5;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header"> Head element
+            <span>Home</span>
+            <span>About</span>
+            <span>Login</span>
+        </div>
+        <div class="sb1">smallbox1</div>
+        <div class="sb2">smallbox2</div>
+        <div class="sb3">smallbox3</div>
+        <div class="sb">smallbox</div>
+        <div class="main">Main content</div>
+        <div class="footer">Footer </div>
+    </div>
+</body>
+
+</html>

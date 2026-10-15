@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClientPilot — Internal CRM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background: #f8fafc;
+            min-height: 100vh;
+            color: #0f172a;
+        }
+
+        .dashboard-app {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            background: #f4f6f8;
+        }
+
+        /* Sidebar: Deep Obsidian & Dark Forest */
+        .sidebar {
+            width: 230px;
+            min-height: 100vh;
+            background: #0d1b1e;
+            color: white;
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            left: 0;
+            top: 0;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 0 10px 28px;
+            cursor: pointer;
+        }
+
+        .brand-logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #059669, #10b981);
+            color: white;
+            border-radius: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            font-weight: 800;
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35);
+        }
+
+        .brand-name {
+            font-size: 17px;
+            font-weight: 800;
+            letter-spacing: 0.2px;
+        }
+
+        .brand-subtitle {
+            font-size: 9px;
+            color: #6ee7b7;
+            margin-top: 2px;
+            font-weight: 700;
+        }
+
+        .nav-title {
+            font-size: 9px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 10px 10px;
+        }
+
+        .nav-list {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .nav-item {
+            width: 100%;
+            padding: 12px 13px;
+            background: transparent;
+            border: none;
+            color: #cbd5e1;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            color: #ecfdf5;
+        }
+
+        .nav-item.active {
+            background: #059669;
+            color: white;
+        }
+
+        .nav-icon {
+            width: 20px;
+            text-align: center;
+            font-size: 15px;
+        }
+
+        .sidebar-bottom {
+            margin-top: auto;
+        }
+
+        .admin-badge {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(52, 211, 153, 0.2);
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        .admin-badge-title {
+            font-size: 10px;
+            color: #94a3b8;
+        }
+
+        .admin-badge-value {
+            font-size: 11px;
+            font-weight: 700;
+            margin-top: 4px;
+            color: #34d399;
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 11px;
+            border: none;
+            border-radius: 9px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fca5a5;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 700;
+            transition: 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: white;
+        }
+
+        /* Workspace */
+        .workspace {
+            margin-left: 230px;
+            width: calc(100% - 230px);
+            padding: 30px 34px;
+            max-width: 1600px;
+        }
+
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+        }
+
+        .header-label {
+            font-size: 10px;
+            font-weight: 800;
+            color: #059669;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+        }
+
+        .greeting-title {
+            font-size: 26px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-top: 4px;
+        }
+
+        .greeting-sub {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 5px;
+        }
+
+        .user-pill {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 7px 14px 7px 7px;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+        }
+
+        .avatar-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #dcfce7;
+            color: #065f46;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .user-name {
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .user-role {
+            font-size: 9px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        /* CSS Grid 1: KPI Stats */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .kpi-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 18px;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            border-color: #a7f3d0;
+            box-shadow: 0 10px 25px rgba(6, 78, 59, 0.08);
+        }
+
+        .kpi-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .kpi-title {
+            font-size: 10px;
+            color: #64748b;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .kpi-icon {
+            width: 30px;
+            height: 30px;
+            background: #ecfdf5;
+            color: #059669;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .kpi-number {
+            font-size: 24px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-top: 13px;
+        }
+
+        .kpi-change {
+            font-size: 10px;
+            color: #059669;
+            margin-top: 5px;
+            font-weight: 600;
+        }
+
+        /* CSS Grid 2: Layout Panels */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1.65fr 1fr;
+            gap: 20px;
+        }
+
+        .left-column,
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 20px;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .panel-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .panel-subtitle {
+            font-size: 10px;
+            color: #64748b;
+            margin-top: 3px;
+        }
+
+        .view-link {
+            color: #059669;
+            font-size: 10px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .view-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Pipeline Chart */
+        .pipeline-summary {
+            display: flex;
+            justify-content: space-between;
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 11px;
+            margin-bottom: 18px;
+            border: 1px solid #f1f5f9;
+        }
+
+        .pipeline-value {
+            font-size: 22px;
+            font-weight: 800;
+            color: #064e3b;
+        }
+
+        .pipeline-label {
+            font-size: 9px;
+            color: #64748b;
+            margin-top: 3px;
+        }
+
+        .pipeline-chart {
+            display: flex;
+            height: 120px;
+            align-items: flex-end;
+            gap: 12px;
+            padding: 10px 4px 0;
+            cursor: pointer;
+        }
+
+        .pipeline-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            height: 100%;
+        }
+
+        .pipeline-bar {
+            width: 70%;
+            background: #34d399;
+            border-radius: 6px 6px 2px 2px;
+            min-height: 15px;
+            transition: 0.2s;
+        }
+
+        .pipeline-column:hover .pipeline-bar {
+            background: #059669;
+        }
+
+        .pipeline-stage {
+            font-size: 8px;
+            color: #64748b;
+            margin-top: 8px;
+        }
+
+        .attention {
+            border: 1px solid #fde68a;
+            background: #fffbeb;
+            border-radius: 12px;
+            padding: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .attention-left {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .warning-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 9px;
+            background: #fef3c7;
+            color: #d97706;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 800;
+        }
+
+        .attention-title {
+            font-size: 11px;
+            font-weight: 800;
+            color: #92400e;
+        }
+
+        .attention-text {
+            font-size: 9px;
+            color: #78350f;
+            margin-top: 3px;
+        }
+
+        .small-btn {
+            border: none;
+            background: #059669;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 7px;
+            font-size: 9px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .small-btn:hover {
+            background: #047857;
+        }
+
+        /* Rows */
+        .client-row,
+        .employee-row,
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 11px 0;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+        }
+
+        .client-row:hover,
+        .employee-row:hover,
+        .activity-item:hover {
+            background-color: #f8fafc;
+            border-radius: 8px;
+            padding-left: 6px;
+            padding-right: 6px;
+        }
+
+        .client-row:last-child,
+        .employee-row:last-child,
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .client-avatar,
+        .employee-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 9px;
+            background: #ecfdf5;
+            color: #059669;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 800;
+        }
+
+        .employee-avatar {
+            border-radius: 50%;
+            background: #f0fdf4;
+            color: #064e3b;
+        }
+
+        .client-info,
+        .employee-info {
+            flex: 1;
+        }
+
+        .client-name,
+        .employee-name {
+            font-size: 11px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .client-company,
+        .employee-role {
+            font-size: 9px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        .health-container {
+            width: 100px;
+        }
+
+        .health-top {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            margin-bottom: 5px;
+        }
+
+        .health-number {
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .health-bar {
+            height: 5px;
+            background: #edf1f5;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .health-fill {
+            height: 100%;
+            border-radius: 10px;
+            background: #10b981;
+        }
+
+        .health-fill.medium {
+            background: #f59e0b;
+        }
+
+        .health-fill.low {
+            background: #ef4444;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 8px;
+            font-weight: 700;
+            color: #064e3b;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #10b981;
+        }
+
+        .status-dot.away {
+            background: #f59e0b;
+        }
+
+        .status-dot.offline {
+            background: #94a3b8;
+        }
+
+        .last-login {
+            font-size: 8px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        .activity-time {
+            font-size: 8px;
+            color: #059669;
+            font-weight: 800;
+            width: 50px;
+        }
+
+        .activity-text {
+            font-size: 10px;
+            color: #334155;
+        }
+
+        /* Quick Action Buttons */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .quick-btn {
+            padding: 12px 5px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 9px;
+            cursor: pointer;
+            font-size: 9px;
+            font-weight: 700;
+            color: #334155;
+            transition: 0.2s;
+        }
+
+        .quick-btn:hover {
+            background: #ecfdf5;
+            border-color: #a7f3d0;
+            color: #065f46;
+        }
+
+        /* Modals */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-card {
+            width: 440px;
+            max-width: 90%;
+            background: white;
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #eef2f6;
+        }
+
+        .modal-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: #064e3b;
+        }
+
+        .close-btn {
+            border: none;
+            background: none;
+            color: #94a3b8;
+            font-size: 17px;
+            cursor: pointer;
+        }
+
+        .modal-content {
+            white-space: pre-line;
+            font-size: 11px;
+            color: #475569;
+            line-height: 1.8;
+            margin-top: 16px;
+        }
+
+        .modal-footer {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        @media(max-width: 1000px) {
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media(max-width: 700px) {
+            .sidebar {
+                width: 70px;
+            }
+
+            .brand-name,
+            .brand-subtitle,
+            .nav-title,
+            .nav-item span,
+            .admin-badge {
+                display: none;
+            }
+
+            .brand {
+                justify-content: center;
+                padding-left: 0;
+                padding-right: 0;
+            }
+
+            .nav-item {
+                justify-content: center;
+            }
+
+            .workspace {
+                margin-left: 70px;
+                width: calc(100% - 70px);
+                padding: 20px;
+            }
+
+            .top-header {
+                align-items: flex-start;
+                gap: 15px;
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-app">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div>
+                <div class="brand" onclick="showOverviewNav()">
+                    <div class="brand-logo">CP</div>
+                    <div>
+                        <div class="brand-name">ClientPilot</div>
+                        <div class="brand-subtitle" id="brandRoleSubtitle">INTERNAL CRM</div>
+                    </div>
+                </div>
+
+                <div class="nav-title">Workspace (User Module)</div>
+                <div class="nav-list">
+                    <button class="nav-item active" id="nav-overview" onclick="showOverviewNav()">
+                        <div class="nav-icon">▦</div>
+                        <span>Overview</span>
+                    </button>
+                    <button class="nav-item" id="nav-contacts" onclick="showContactsNav()">
+                        <div class="nav-icon">♙</div>
+                        <span>Contacts</span>
+                    </button>
+                    <button class="nav-item" id="nav-deals" onclick="showDealsNav()">
+                        <div class="nav-icon">◆</div>
+                        <span>Deals & Pipeline</span>
+                    </button>
+                    <button class="nav-item" id="nav-schedule" onclick="showScheduleNav()">
+                        <div class="nav-icon">◷</div>
+                        <span>Schedule</span>
+                    </button>
+
+                    <!-- Admin Sections -->
+                    <div class="nav-title admin-only" id="adminHeader">Administration (Admin Module)</div>
+                    <button class="nav-item admin-only" id="nav-employees" onclick="showEmployeesNav()">
+                        <div class="nav-icon">♟</div>
+                        <span>Employees</span>
+                    </button>
+                    <button class="nav-item admin-only" id="nav-activity" onclick="showActivityNav()">
+                        <div class="nav-icon">↗</div>
+                        <span>Team Activity</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="sidebar-bottom">
+                <div class="admin-badge" onclick="showCurrentUser()">
+                    <div class="admin-badge-title">WORKSPACE</div>
+                    <div class="admin-badge-value" id="currentModuleLabel">@clientpilot.com</div>
+                </div>
+                <button class="logout-btn" onclick="logout()">⎋ &nbsp; Logout</button>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="workspace">
+            <header class="top-header">
+                <div>
+                    <div class="header-label" id="moduleTypeBanner">Internal User Workspace</div>
+                    <h1 class="greeting-title">
+                        Good day, <span id="displayUserName">User</span> 👋
+                    </h1>
+                    <p class="greeting-sub" id="greetingSub">Here's your operational CRM overview for today.</p>
+                </div>
+                <div class="user-pill" onclick="showCurrentUser()">
+                    <div class="avatar-circle" id="avatarInitial">U</div>
+                    <div>
+                        <div class="user-name" id="displayUserFullName">Demo User</div>
+                        <div class="user-role" id="displayUserRole">Sales Executive</div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- CSS Grid 1: KPI Stats -->
+            <section class="kpi-grid">
+                <div class="kpi-card" onclick="showDealsNav()">
+                    <div class="kpi-top">
+                        <div class="kpi-title">Total Pipeline</div>
+                        <div class="kpi-icon">₹</div>
+                    </div>
+                    <div class="kpi-number" id="pipelineStat">₹42.8L</div>
+                    <div class="kpi-change">↑ 16.4% from last month</div>
+                </div>
+
+                <div class="kpi-card" onclick="showDealsNav()">
+                    <div class="kpi-top">
+                        <div class="kpi-title">Active Deals</div>
+                        <div class="kpi-icon">◆</div>
+                    </div>
+                    <div class="kpi-number" id="activeDealsStat">31</div>
+                    <div class="kpi-change">7 proposals currently open</div>
+                </div>
+
+                <div class="kpi-card"
+                    onclick="openModal('Win Rate Analysis', 'Current quarterly win rate: 74%\n• Closed Won: 18 Deals\n• Average deal cycle: 14 days\n• Top conversion stage: Proposal to Negotiation (82%)')">
+                    <div class="kpi-top">
+                        <div class="kpi-title">Win Rate</div>
+                        <div class="kpi-icon">%</div>
+                    </div>
+                    <div class="kpi-number">74%</div>
+                    <div class="kpi-change">↑ 4.2% this quarter</div>
+                </div>
+
+                <div class="kpi-card" onclick="handleTeamCardClick()">
+                    <div class="kpi-top">
+                        <div class="kpi-title">Team Clearance</div>
+                        <div class="kpi-icon">●</div>
+                    </div>
+                    <div class="kpi-number" id="teamOnlineStat">8 / 12</div>
+                    <div class="kpi-change" id="teamChangeText">Verified internal seats</div>
+                </div>
+            </section>
+
+            <!-- CSS Grid 2: Left & Right Panels -->
+            <div class="main-grid">
+                <div class="left-column">
+                    <!-- Pipeline Visualization -->
+                    <section class="panel">
+                        <div class="panel-header">
+                            <div>
+                                <div class="panel-title">Pipeline Overview</div>
+                                <div class="panel-subtitle">Current sales movement across all active deals</div>
+                            </div>
+                            <div class="view-link" onclick="showDealsNav()">View Deals →</div>
+                        </div>
+                        <div class="pipeline-summary">
+                            <div>
+                                <div class="pipeline-value">₹42.8L</div>
+                                <div class="pipeline-label">Total opportunity value</div>
+                            </div>
+                            <div>
+                                <div class="pipeline-value" id="summaryDealCount">31</div>
+                                <div class="pipeline-label">Active deals</div>
+                            </div>
+                            <div>
+                                <div class="pipeline-value">₹18.5L</div>
+                                <div class="pipeline-label">Closed won</div>
+                            </div>
+                        </div>
+                        <div class="pipeline-chart" onclick="showDealsNav()">
+                            <div class="pipeline-column">
+                                <div class="pipeline-bar" style="height:85%;"></div>
+                                <div class="pipeline-stage">Leads</div>
+                            </div>
+                            <div class="pipeline-column">
+                                <div class="pipeline-bar" style="height:68%;"></div>
+                                <div class="pipeline-stage">Qualified</div>
+                            </div>
+                            <div class="pipeline-column">
+                                <div class="pipeline-bar" style="height:52%;"></div>
+                                <div class="pipeline-stage">Proposal</div>
+                            </div>
+                            <div class="pipeline-column">
+                                <div class="pipeline-bar" style="height:38%;"></div>
+                                <div class="pipeline-stage">Negotiation</div>
+                            </div>
+                            <div class="pipeline-column">
+                                <div class="pipeline-bar" style="height:25%;"></div>
+                                <div class="pipeline-stage">Won</div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Alert Box -->
+                    <section class="panel">
+                        <div class="panel-header">
+                            <div>
+                                <div class="panel-title">Needs Attention</div>
+                                <div class="panel-subtitle">Items requiring immediate action</div>
+                            </div>
+                            <div class="view-link" onclick="scheduleFollowUp()">1 item</div>
+                        </div>
+                        <div class="attention">
+                            <div class="attention-left">
+                                <div class="warning-icon">!</div>
+                                <div>
+                                    <div class="attention-title">TechNova Security Deal</div>
+                                    <div class="attention-text">₹7.8L proposal has received no response for 9 days.
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="small-btn" onclick="scheduleFollowUp()">Follow Up</button>
+                        </div>
+                    </section>
+
+                    <!-- Client Directory -->
+                    <section class="panel">
+                        <div class="panel-header">
+                            <div>
+                                <div class="panel-title">Client Health Overview</div>
+                                <div class="panel-subtitle">Relationship health of key accounts</div>
+                            </div>
+                            <div class="view-link" onclick="showContactsNav()">View All Contacts →</div>
+                        </div>
+                        <div class="client-row"
+                            onclick="showClient('Ananya Rao', 'Apex Core Systems', 'VP — Technology', '92%', 'Strong engagement')">
+                            <div class="client-avatar">AR</div>
+                            <div class="client-info">
+                                <div class="client-name">Ananya Rao</div>
+                                <div class="client-company">Apex Core Systems</div>
+                            </div>
+                            <div class="health-container">
+                                <div class="health-top"><span>Health</span><span class="health-number">92%</span></div>
+                                <div class="health-bar">
+                                    <div class="health-fill" style="width:92%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="client-row"
+                            onclick="showClient('Rohan Mehta', 'FinTech Dynamics', 'Operations Lead', '74%', 'Follow-up recommended')">
+                            <div class="client-avatar">RM</div>
+                            <div class="client-info">
+                                <div class="client-name">Rohan Mehta</div>
+                                <div class="client-company">FinTech Dynamics</div>
+                            </div>
+                            <div class="health-container">
+                                <div class="health-top"><span>Health</span><span class="health-number">74%</span></div>
+                                <div class="health-bar">
+                                    <div class="health-fill medium" style="width:74%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <div class="right-column">
+                    <!-- Admin Protected Panel -->
+                    <section class="panel admin-only" id="adminTeamPanel">
+                        <div class="panel-header">
+                            <div>
+                                <div class="panel-title">Active Team (Admin View)</div>
+                                <div class="panel-subtitle">Registered employee status</div>
+                            </div>
+                            <div class="view-link" onclick="showEmployeesNav()">Manage All →</div>
+                        </div>
+                        <div id="teamMemberListContainer"></div>
+                    </section>
+
+                    <!-- Activity Log -->
+                    <section class="panel">
+                        <div class="panel-header">
+                            <div>
+                                <div class="panel-title">Today's Activity</div>
+                                <div class="panel-subtitle">Latest CRM actions</div>
+                            </div>
+                            <div class="view-link" onclick="showActivityNav()">Activity Log →</div>
+                        </div>
+                        <div id="activityStreamContainer">
+                            <div class="activity-item">
+                                <div class="activity-time">10:15</div>
+                                <div class="activity-text"><strong>Ananya Rao</strong> updated the Apex Core deal.</div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-time">11:20</div>
+                                <div class="activity-text"><strong>Arjun Reddy</strong> logged a client call.</div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Quick Actions -->
+                    <section class="panel">
+                        <div class="panel-header">
+                            <div>
+                                <div class="panel-title">Quick Actions</div>
+                                <div class="panel-subtitle">Common CRM operations</div>
+                            </div>
+                        </div>
+                        <div class="quick-actions">
+                            <button class="quick-btn" onclick="openNewDealModal()">+ New Deal</button>
+                            <button class="quick-btn" onclick="logCall()">+ Log Call</button>
+                            <button class="quick-btn" onclick="addNote()">+ Add Note</button>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Dialog -->
+    <div class="modal-overlay" id="infoModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title" id="modalHeading">Details</div>
+                <button class="close-btn" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-content" id="modalContent"></div>
+            <div class="modal-footer" id="modalFooter">
+                <button class="small-btn" onclick="closeModal()">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const sessionData = localStorage.getItem("cp_current_user");
+
+        if (!sessionData) {
+            window.location.href = "index.html";
+        }
+
+        const currentUser = JSON.parse(sessionData);
+        const isAdmin = (currentUser.role === 'Administrator');
+
+        document.getElementById("displayUserFullName").textContent = currentUser.name;
+        document.getElementById("displayUserName").textContent = currentUser.name.split(" ")[0];
+        document.getElementById("displayUserRole").textContent = currentUser.role;
+        document.getElementById("avatarInitial").textContent = currentUser.name.charAt(0).toUpperCase();
+
+        if (isAdmin) {
+            document.getElementById("moduleTypeBanner").textContent = "Executive Management Console (Admin Module)";
+            document.getElementById("greetingSub").textContent = "Full administrative access: User directory, activity telemetry, and clearance controls.";
+            document.getElementById("brandRoleSubtitle").textContent = "ADMIN PORTAL";
+            document.getElementById("currentModuleLabel").textContent = "ADMIN CLEARANCE";
+            renderAdminTeam();
+        } else {
+            document.getElementById("moduleTypeBanner").textContent = "Sales Workspace (User Module)";
+            document.getElementById("greetingSub").textContent = "Manage active leads, schedule client calls, and track opportunities.";
+            document.getElementById("currentModuleLabel").textContent = "SALES CLEARANCE";
+
+            const adminElements = document.querySelectorAll(".admin-only");
+            adminElements.forEach(el => el.style.display = "none");
+        }
+
+        function renderAdminTeam() {
+            const users = JSON.parse(localStorage.getItem('cp_registered_users')) || [];
+            const container = document.getElementById("teamMemberListContainer");
+            if (!container) return;
+
+            container.innerHTML = users.map(u => `
+                <div class="employee-row" onclick="openModal('Employee Record: ${u.name}', 'Email: ${u.email}\\nRole: ${u.role || 'Sales'}\\nStatus: Verified Internal Seat\\nSecurity Clearance: Corporate Level-1')">
+                    <div class="employee-avatar">${u.name.charAt(0)}</div>
+                    <div class="employee-info">
+                        <div class="employee-name">${u.name}</div>
+                        <div class="employee-role">${u.role || 'Sales Associate'}</div>
+                    </div>
+                    <div class="employee-login">
+                        <div class="status"><span class="status-dot"></span> Active</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function setActiveNav(buttonId) {
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            const activeBtn = document.getElementById(buttonId);
+            if (activeBtn) activeBtn.classList.add('active');
+        }
+
+        function showOverviewNav() {
+            setActiveNav('nav-overview');
+            openModal(
+                "Workspace Overview",
+                `Active User: ${currentUser.name}\nModule: ${isAdmin ? 'Admin Console' : 'User CRM'}\nTotal Pipeline: ₹42.8 Lakh\nDatabase: LocalStorage Active Synced.`
+            );
+        }
+
+        function showContactsNav() {
+            setActiveNav('nav-contacts');
+            openModal(
+                "Contacts Directory (User Module)",
+                "• Ananya Rao — Apex Core Systems (VP Tech)\n• Rohan Mehta — FinTech Dynamics (Ops Lead)\n• Vikram Nair — MediCore Health (Procurement)\n• Sunita Verma — GlobalTech (Procurement Lead)\n\nFiltered by corporate domain perimeter."
+            );
+        }
+
+        function showDealsNav() {
+            setActiveNav('nav-deals');
+            const storedDeals = JSON.parse(localStorage.getItem('cp_custom_deals')) || [];
+            let dealText = "Standard Pipeline:\n• Inbound Leads — ₹12.4L\n• Technical Qualification — ₹8.6L\n• Proposal Sent — ₹14.2L\n• Closed Won — ₹18.5L\n";
+            if (storedDeals.length > 0) {
+                dealText += "\nNewly Created Deals:\n" + storedDeals.map(d => `• ${d.name} (${d.client}) — ₹${d.value}L`).join('\n');
+            }
+            openModal("Active Deals & Pipeline", dealText);
+        }
+
+        function showScheduleNav() {
+            setActiveNav('nav-schedule');
+            openModal(
+                "Today's Calendar & Schedule",
+                "• 10:30 AM — MediCore Product Demo (Conference Room 3)\n• 02:00 PM — TechNova Proposal Alignment Review\n• 04:30 PM — Daily Pipeline Sync"
+            );
+        }
+
+        function showEmployeesNav() {
+            if (!isAdmin) {
+                openModal("Access Denied", "Only administrators can view and manage corporate employee directories.");
+                return;
+            }
+            setActiveNav('nav-employees');
+            const users = JSON.parse(localStorage.getItem('cp_registered_users')) || [];
+            const userList = users.map(u => `• ${u.name} (${u.email}) — ${u.role || 'Sales'}`).join('\n');
+            openModal("Registered Employees (Admin Module)", "Total Registered Users:\n\n" + userList);
+        }
+
+        function showActivityNav() {
+            if (!isAdmin) {
+                openModal("Access Restricted", "Detailed activity audit logging is reserved for the Admin Module.");
+                return;
+            }
+            setActiveNav('nav-activity');
+            openModal(
+                "Team Activity Audit Stream",
+                "• 10:15 AM — Ananya Rao updated deal stage\n• 11:20 AM — Arjun Reddy logged sales call\n• 01:30 PM — LocalStorage sync completed\n\nAll actions recorded with corporate seat identifiers."
+            );
+        }
+
+        function handleTeamCardClick() {
+            if (isAdmin) showEmployeesNav();
+            else openModal("Team Status", "8 of 12 corporate members currently online.");
+        }
+
+        function openNewDealModal() {
+            const clientName = prompt("Enter Client/Company Name:");
+            if (!clientName) return;
+            const dealValue = prompt("Enter Deal Value in Lakhs (₹):", "5.0");
+            if (!dealValue) return;
+
+            const storedDeals = JSON.parse(localStorage.getItem('cp_custom_deals')) || [];
+            storedDeals.push({ name: `${clientName} Contract`, client: clientName, value: dealValue });
+            localStorage.setItem('cp_custom_deals', JSON.stringify(storedDeals));
+
+            document.getElementById("summaryDealCount").textContent = 31 + storedDeals.length;
+            document.getElementById("activeDealsStat").textContent = 31 + storedDeals.length;
+            openModal("Deal Saved", `Successfully registered new deal for ${clientName} valued at ₹${dealValue}L to LocalStorage.`);
+        }
+
+        function logCall() {
+            const notes = prompt("Enter call summary/outcome:");
+            if (notes) {
+                openModal("Call Activity Logged", `Logged follow-up notes:\n"${notes}"\n\nActivity synchronized to corporate workspace.`);
+            }
+        }
+
+        function addNote() {
+            const note = prompt("Enter note text to attach to workspace:");
+            if (note) {
+                openModal("Note Attached", `Note: "${note}"\nSaved to your active workspace.`);
+            }
+        }
+
+        function scheduleFollowUp() {
+            openModal("Follow-up Action", "Automated follow-up request queued for TechNova Procurement. Reminder set for tomorrow morning.");
+        }
+
+        function showClient(name, company, role, health, status) {
+            openModal("Client Details", `Contact: ${name}\nCompany: ${company}\nDesignation: ${role}\nRelationship Health: ${health}\nCurrent Status: ${status}`);
+        }
+
+        function showCurrentUser() {
+            openModal(
+                "Current User Profile",
+                `Name: ${currentUser.name}\nEmail: ${currentUser.email}\nAssigned Role: ${currentUser.role}\nActive Clearance: ${isAdmin ? 'Admin Console' : 'User Module'}`
+            );
+        }
+
+        function openModal(title, content) {
+            document.getElementById("modalHeading").textContent = title;
+            document.getElementById("modalContent").textContent = content;
+            document.getElementById("infoModal").style.display = "flex";
+        }
+
+        function closeModal() {
+            document.getElementById("infoModal").style.display = "none";
+        }
+
+        function logout() {
+            localStorage.removeItem("cp_current_user");
+            window.location.href = "index.html";
+        }
+    </script>
+</body>
+
+</html>

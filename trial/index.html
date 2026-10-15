@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Keystone CRM — Log in</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+    <div class="auth-wrap">
+        <div class="auth-brand">
+            <div class="mark">Keystone CRM</div>
+            <div>
+                <h1>One place for every client relationship.</h1>
+                <p>Track accounts, conversations, and open tickets across your team — built for internal use by verified
+                    Keystone staff only.</p>
+            </div>
+            <div class="foot">Access is limited to approved team accounts.</div>
+        </div>
+
+        <div class="auth-form">
+            <div class="auth-card">
+                <h2>Log in</h2>
+                <div id="notice"></div>
+                <form id="login-form">
+                    <div class="field">
+                        <label for="email">Work email</label>
+                        <input type="email" id="email" required placeholder="you@keystonecrm.com" />
+                    </div>
+                    <div class="field">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" required placeholder="••••••••" />
+                    </div>
+                    <button class="btn accent" type="submit" style="width:100%">Log in</button>
+                </form>
+                <p class="switch">New to the team? <a href="signup.html">Request access</a></p>
+                <p class="switch" style="margin-top:.4em">Demo admin: admin@keystonecrm.com / admin123<br />Demo agent:
+                    sam@keystonecrm.com / password</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        document.getElementById("login-form").addEventListener("submit", function (e) {
+            e.preventDefault();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+            const result = login(email, password);
+            const notice = document.getElementById("notice");
+            if (result.ok) {
+                window.location.href = "dashboard.html";
+            } else {
+                notice.innerHTML = `<div class="notice error">${result.message}</div>`;
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>NOVA - Grocery Store</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial;
+        }
+
+        body {
+            background: #f4f7f2;
+            color: #222;
+        }
+
+        /* NAVBAR */
+        nav {
+            height: 70px;
+            padding: 0 50px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #173d2a;
+            color: white;
+        }
+
+        nav h1 {
+            color: #b7e4c7;
+            letter-spacing: 3px;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 25px;
+        }
+
+        nav a:hover {
+            color: #b7e4c7;
+        }
+
+        /* HERO */
+        .hero {
+            margin: 25px 50px;
+            height: 280px;
+            border-radius: 18px;
+            background:
+                linear-gradient(90deg, rgba(0, 0, 0, .7), rgba(0, 0, 0, .1)),
+                url("https://images.unsplash.com/photo-1542838132-92c53300491e");
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            padding-left: 50px;
+            color: white;
+        }
+
+        .hero h2 {
+            font-size: 42px;
+        }
+
+        .hero p {
+            margin: 10px 0;
+            font-size: 18px;
+        }
+
+        button {
+            padding: 10px 22px;
+            border: 0;
+            border-radius: 20px;
+            background: #b7e4c7;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .shop {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            50% {
+                transform: scale(1.08)
+            }
+        }
+
+        /* CATEGORIES */
+        .category {
+            text-align: center;
+            margin: 30px;
+        }
+
+        .category button {
+            margin: 8px;
+            background: white;
+            border: 1px solid #48805d;
+        }
+
+        /* PRODUCTS */
+        .heading {
+            text-align: center;
+            margin: 25px;
+            color: #173d2a;
+        }
+
+        .products {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            padding: 20px 50px;
+        }
+
+        .product {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 3px 10px #ccc;
+        }
+
+        .product:hover {
+            transform: translateY(-5px);
+        }
+
+        .product img {
+            width: 100%;
+            height: 170px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .product h3 {
+            margin: 12px 0 6px;
+            color: #173d2a;
+        }
+
+        .product p {
+            color: #777;
+        }
+
+        .price {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 10px;
+            color: #287044;
+        }
+
+        .cart {
+            background: #173d2a;
+            color: white;
+        }
+
+        /* FOOTER */
+        footer {
+            margin-top: 40px;
+            padding: 25px;
+            text-align: center;
+            background: #173d2a;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVIGATION -->
+    <nav>
+        <h1>🛒 NOVA</h1>
+
+        <div>
+            <a href="#">Home</a>
+            <a href="#">Groceries</a>
+            <a href="#">Offers</a>
+            <a href="#">Cart 🛒</a>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div>
+            <h2>FRESH GROCERIES</h2>
+            <p>Quality groceries delivered to your doorstep.</p>
+            <button class="shop">SHOP NOW</button>
+        </div>
+    </section>
+
+    <!-- CATEGORIES -->
+    <div class="category">
+        <h2>Shop Categories</h2>
+        <button>Rice & Grains</button>
+        <button>Vegetables</button>
+        <button>Fruits</button>
+        <button>Dairy</button>
+    </div>
+
+    <!-- PRODUCTS -->
+    <h2 class="heading">Popular Groceries</h2>
+
+    <div class="products">
+
+        <!-- RICE -->
+        <div class="product">
+            <img src="https://images.unsplash.com/photo-1586201375761-83865001e31c">
+            <h3>Premium Rice</h3>
+            <p>5 kg Basmati Rice</p>
+            <div class="price">₹599</div>
+            <button class="cart">Add to Cart</button>
+        </div>
+
+        <!-- VEGETABLES -->
+        <div class="product">
+            <img src="https://images.unsplash.com/photo-1540420773420-3366772f4999">
+            <h3>Fresh Vegetables</h3>
+            <p>Farm fresh vegetables</p>
+            <div class="price">₹199</div>
+            <button class="cart">Add to Cart</button>
+        </div>
+
+        <!-- FRUITS -->
+        <div class="product">
+            <img src="https://images.unsplash.com/photo-1619566636858-adf3ef46400b">
+            <h3>Fresh Fruits</h3>
+            <p>Healthy seasonal fruits</p>
+            <div class="price">₹249</div>
+            <button class="cart">Add to Cart</button>
+        </div>
+
+        <!-- MILK -->
+        <div class="product">
+            <img src="https://images.unsplash.com/photo-1563636619-e9143da7973b">
+            <h3>Fresh Milk</h3>
+            <p>Pure and nutritious milk</p>
+            <div class="price">₹70</div>
+            <button class="cart">Add to Cart</button>
+        </div>
+
+    </div>
+
+    <footer>
+        © 2026 NOVA | Fresh • Quality • Affordable
+    </footer>
+
+</body>
+
+</html>

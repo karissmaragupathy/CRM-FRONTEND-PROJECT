@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NexaFlow — Accounts</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <div id="shell"></div>
+
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+    <script>
+        const session = requireAuth();
+
+        function render() {
+            const accounts = getAccounts();
+            const contacts = getContacts();
+            const deals = getDeals();
+
+            const rows = accounts.map(a => {
+                const contactCount = contacts.filter(c => c.accountId === a.id).length;
+                const dealCount = deals.filter(d => d.accountId === a.id).length;
+                return `
+      <tr>
+        <td>${a.name}</td>
+        <td>${a.industry}</td>
+        <td>${a.owner}</td>
+        <td>${formatDate(a.since)}</td>
+        <td>${contactCount}</td>
+        <td>${dealCount}</td>
+      </tr>`;
+            }).join("");
+
+            document.getElementById("shell").innerHTML = `
+      ${renderShellStart("accounts.html", session)}
+      <div class="page-head">
+        <div><h1>Accounts</h1><p>Companies your team works with.</p></div>
+        <button class="btn accent" onclick="document.getElementById('modal').classList.remove('hidden')">Add Account</button>
+      </div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Account</th><th>Industry</th><th>Owner</th><th>Customer since</th><th>Contacts</th><th>Deals</th></tr></thead>
+          <tbody>${rows || `<tr><td colspan="6" class="empty">No accounts yet.</td></tr>`}</tbody>
+        </table>
+      </div>
+      ${SHELL_END}
+
+      <div class="modal-backdrop hidden" id="modal">
+        <div class="modal">
+          <h3>Add Account</h3>
+          <form id="account-form">
+            <div class="field"><label>Company name</label><input type="text" id="f-name" required /></div>
+            <div class="field"><label>Industry</label><input type="text" id="f-industry" required /></div>
+            <div style="display:flex;gap:.6rem;justify-content:flex-end">
+              <button type="button" class="btn secondary" onclick="document.getElementById('modal').classList.add('hidden')">Cancel</button>
+              <button type="submit" class="btn accent">Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+
+            document.getElementById("account-form").addEventListener("submit", function (e) {
+                e.preventDefault();
+                const accounts = getAccounts();
+                accounts.push({
+                    id: uid("acc"),
+                    name: document.getElementById("f-name").value,
+                    industry: document.getElementById("f-industry").value,
+                    owner: session.name,
+                    since: new Date().toISOString().slice(0, 10),
+                });
+                setAccounts(accounts);
+                toast("Account added.", "success");
+                render();
+            });
+        }
+
+        render();
+    </script>
+</body>
+
+</html>
