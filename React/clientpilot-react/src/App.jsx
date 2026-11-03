@@ -1,782 +1,651 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 
-const DOMAIN_RESTRICTION = "@clientpilot.com";
-const ADMIN_DEFAULT_PASS = "admin123";
+const COMPANY_DOMAIN = "@clientpilot.com";
 
-// 3 Default Authorized Admins from your project
-const AUTHORIZED_ADMINS = {
-  "arjun.mehta@clientpilot.com": { name: "Arjun Mehta", title: "Executive Director" },
-  "kavita.nair@clientpilot.com": { name: "Kavita Nair", title: "Head of Operations" },
-  "rohit.verma@clientpilot.com": { name: "Rohit Verma", title: "Lead Systems & Security" }
+// Authorized leadership directors
+const LEADERSHIP_ACCOUNTS = {
+  "arjun.mehta@clientpilot.com": { name: "Arjun Mehta", role: "Executive Director", pass: "Arjun@Corp2026" },
+  "kavita.nair@clientpilot.com": { name: "Kavita Nair", role: "Head of Operations", pass: "Kavita@Corp2026" },
+  "rohit.verma@clientpilot.com": { name: "Rohit Verma", role: "Lead Systems Architect", pass: "Rohit@Corp2026" }
 };
 
 export default function App() {
   // Session State
   const [currentUser, setCurrentUser] = useState(null);
+  const [authView, setAuthView] = useState('login'); // 'login' | 'register' | 'admin'
 
-  // Auth View State
-  const [activeModuleTab, setActiveModuleTab] = useState('user'); // 'user' or 'admin'
+  // Input states
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPass, setLoginPass] = useState('');
-  const [loginError, setLoginError] = useState('');
+  const [loginErr, setLoginErr] = useState('');
 
-  const [signupName, setSignupName] = useState('');
-  const [signupEmail, setSignupEmail] = useState('');
-  const [signupPass, setSignupPass] = useState('');
-  const [signupError, setSignupError] = useState('');
-  const [signupSuccess, setSignupSuccess] = useState('');
+  const [regName, setRegName] = useState('');
+  const [regHandle, setRegHandle] = useState(''); // e.g. "priya.sharma"
+  const [regPass, setRegPass] = useState('');
+  const [regDept, setRegDept] = useState('Software Engineering');
+  const [regErr, setRegErr] = useState('');
+  const [regSuccess, setRegSuccess] = useState('');
 
   const [adminEmail, setAdminEmail] = useState('');
   const [adminPass, setAdminPass] = useState('');
-  const [adminError, setAdminError] = useState('');
+  const [adminErr, setAdminErr] = useState('');
 
-  // Dashboard Data State
+  // Active navigation tab
+  const [activeTab, setActiveTab] = useState('projects');
+
+  // Practical Company Data Sets
+  const [projects, setProjects] = useState([]);
   const [staffDirectory, setStaffDirectory] = useState([]);
-  const [clientAccounts, setClientAccounts] = useState([]);
-  const [telemetryLogs, setTelemetryLogs] = useState([
-    { time: '11:15:02', text: '[AUTH] Staff login successful: priya.s@clientpilot.com' },
-    { time: '10:48:19', text: '[DB_SYNC] Incremental backup completed across ap-south-1 nodes' },
-    { time: '09:30:00', text: '[CLEARANCE] Admin session initiated by Arjun Mehta' }
-  ]);
-  const [dailyCalls, setDailyCalls] = useState(18);
-  const [activeSubNav, setActiveSubNav] = useState('Overview');
-  const [modal, setModal] = useState({ isOpen: false, title: '', body: '' });
+  const [auditLogs, setAuditLogs] = useState([]);
 
-  // 1. Initial LocalStorage Synchronization
+  // Project form states
+  const [newClient, setNewClient] = useState('');
+  const [newProjectName, setNewProjectName] = useState('');
+  const [newBudget, setNewBudget] = useState('');
+  const [newLead, setNewLead] = useState('');
+  const [newStatus, setNewStatus] = useState('In Progress');
+
+  // 1. Load or Seed Real Company Data
   useEffect(() => {
-    // Session
-    const rawSession = localStorage.getItem("cp_current_session");
-    if (rawSession) {
-      try {
-        setCurrentUser(JSON.parse(rawSession));
-      } catch (e) {
-        localStorage.removeItem("cp_current_session");
-      }
+    // Session restoration
+    const savedSession = localStorage.getItem("cp_corp_session");
+    if (savedSession) {
+      try { setCurrentUser(JSON.parse(savedSession)); } catch (e) { localStorage.removeItem("cp_corp_session"); }
     }
 
-    // Staff Directory
-    const existingStaff = localStorage.getItem("cp_staff_directory");
-    if (!existingStaff) {
-      const seedStaff = [
-        { name: "Priya Sharma", email: "priya.s@clientpilot.com", pass: "user123", role: "Senior Sales Manager", department: "Client Acquisition" },
-        { name: "Aditya Rao", email: "aditya.r@clientpilot.com", pass: "user123", role: "Account Specialist", department: "Customer Success" }
+    // Projects directory
+    const savedProjects = localStorage.getItem("cp_projects_data");
+    if (!savedProjects) {
+      const initialProjects = [
+        { id: 1, client: "Apex Financial", title: "Core Banking API Gateway", budget: "₹18.5L", progress: 75, lead: "Priya Sharma", status: "In Progress", deadline: "Dec 2026" },
+        { id: 2, client: "MediCore Healthcare", title: "HL7 Data Pipeline Migration", budget: "₹14.2L", progress: 90, lead: "Aditya Rao", status: "Testing & QA", deadline: "Nov 2026" },
+        { id: 3, client: "Logix Supply Chain", title: "Real-time Fleet Telemetry", budget: "₹22.0L", progress: 40, lead: "Sneha Patel", status: "Sprint 2", deadline: "Jan 2027" }
       ];
-      localStorage.setItem("cp_staff_directory", JSON.stringify(seedStaff));
-      setStaffDirectory(seedStaff);
+      localStorage.setItem("cp_projects_data", JSON.stringify(initialProjects));
+      setProjects(initialProjects);
     } else {
-      setStaffDirectory(JSON.parse(existingStaff));
+      setProjects(JSON.parse(savedProjects));
     }
 
-    // Client Accounts
-    const existingClients = localStorage.getItem("cp_clients_directory");
-    if (!existingClients) {
-      const seedClients = [
-        { id: 1, company: 'Apex Core Systems', contact: 'Ananya Rao', stage: 'Proposal', value: '₹7.8L' },
-        { id: 2, company: 'FinTech Dynamics', contact: 'Rohan Mehta', stage: 'Negotiation', value: '₹12.4L' },
-        { id: 3, company: 'MediCore Health', contact: 'Vikram Nair', stage: 'Contract Sent', value: '₹4.5L' }
+    // Staff directory
+    const savedStaff = localStorage.getItem("cp_staff_directory");
+    if (!savedStaff) {
+      const initialStaff = [
+        { name: "Priya Sharma", email: "priya.sharma@clientpilot.com", role: "Tech Lead", department: "Software Engineering", pass: "Priya#Secure2026" },
+        { name: "Aditya Rao", email: "aditya.rao@clientpilot.com", role: "Systems Engineer", department: "Cloud Infrastructure", pass: "Aditya#Secure2026" },
+        { name: "Sneha Patel", email: "sneha.patel@clientpilot.com", role: "Frontend Architect", department: "Product Design", pass: "Sneha#Secure2026" }
       ];
-      localStorage.setItem("cp_clients_directory", JSON.stringify(seedClients));
-      setClientAccounts(seedClients);
+      localStorage.setItem("cp_staff_directory", JSON.stringify(initialStaff));
+      setStaffDirectory(initialStaff);
     } else {
-      setClientAccounts(JSON.parse(existingClients));
+      setStaffDirectory(JSON.parse(savedStaff));
     }
+
+    // Audit trail
+    setAuditLogs([
+      { time: "09:15:20", actor: "System Daemon", action: "Production DB replica sync completed (ap-south-1)" },
+      { time: "09:42:10", actor: "Arjun Mehta", action: "Quarterly sprint targets approved for Apex Financial" },
+      { time: "10:04:55", actor: "Priya Sharma", action: "Milestone v1.4 pushed for Core Banking API" }
+    ]);
   }, []);
 
-  // Modal helpers
-  const openModal = (title, body) => setModal({ isOpen: true, title, body });
-  const closeModal = () => setModal({ isOpen: false, title: '', body: '' });
-
-  // Real-time audit log generator
-  const addTelemetry = (msg) => {
+  const addLog = (actor, action) => {
     const time = new Date().toTimeString().split(' ')[0];
-    setTelemetryLogs(prev => [{ time, text: msg }, ...prev]);
+    setAuditLogs(prev => [{ time, actor, action }, ...prev]);
   };
 
-  // -------------------------------------------------------------
-  // AUTHENTICATION LOGIC
-  // -------------------------------------------------------------
-  const handleUserLogin = (e) => {
+  // Staff Login
+  const handleStaffLogin = (e) => {
     e.preventDefault();
+    setLoginErr('');
     const email = loginEmail.trim().toLowerCase();
-    setLoginError('');
 
-    if (!email.endsWith(DOMAIN_RESTRICTION)) {
-      setLoginError(`Access restricted to ${DOMAIN_RESTRICTION} email addresses.`);
+    if (!email.endsWith(COMPANY_DOMAIN)) {
+      setLoginErr(`Authentication restricted to verified ${COMPANY_DOMAIN} addresses.`);
       return;
     }
 
-    const matched = staffDirectory.find(w => w.email === email && w.pass === loginPass);
-    if (matched) {
-      const session = {
-        name: matched.name,
-        role: matched.role || "Operations Executive",
-        email: matched.email,
-        accountType: "Worker"
-      };
-      localStorage.setItem("cp_current_session", JSON.stringify(session));
+    const employee = staffDirectory.find(s => s.email === email && s.pass === loginPass);
+    if (employee) {
+      const session = { name: employee.name, email: employee.email, role: employee.role, department: employee.department, clearance: 'Staff' };
+      localStorage.setItem("cp_corp_session", JSON.stringify(session));
       setCurrentUser(session);
-      addTelemetry(`[AUTH] Staff login successful: ${email}`);
+      setActiveTab('projects');
+      addLog(employee.name, "Authenticated to Staff Workspace");
     } else {
-      setLoginError("Invalid staff credentials. Contact your team lead or register.");
+      setLoginErr("Incorrect corporate email or password. Verify credentials.");
     }
   };
 
-  const handleUserSignup = (e) => {
+  // Staff Registration (User supplies handle, auto-binds @clientpilot.com)
+  const handleStaffRegister = (e) => {
     e.preventDefault();
-    const email = signupEmail.trim().toLowerCase();
-    const name = signupName.trim();
-    setSignupError('');
-    setSignupSuccess('');
+    setRegErr('');
+    setRegSuccess('');
 
-    if (!email.endsWith(DOMAIN_RESTRICTION)) {
-      setSignupError(`Registration permitted only via company domain (${DOMAIN_RESTRICTION}).`);
+    const cleanHandle = regHandle.trim().toLowerCase().replace(/[^a-z0-9._-]/g, '');
+    if (!cleanHandle) {
+      setRegErr("Please enter a valid corporate username handle.");
       return;
     }
 
-    if (staffDirectory.some(w => w.email === email)) {
-      setSignupError("Employee profile already exists. Please log in.");
+    const fullEmail = `${cleanHandle}${COMPANY_DOMAIN}`;
+    if (staffDirectory.some(s => s.email === fullEmail)) {
+      setRegErr(`Account ${fullEmail} is already active.`);
       return;
     }
 
-    const newStaff = {
-      name: name,
-      email: email,
-      pass: signupPass,
-      role: "Operations Associate",
-      department: "Client Services"
+    if (regPass.length < 6) {
+      setRegErr("Password must be at least 6 characters long.");
+      return;
+    }
+
+    const newEmployee = {
+      name: regName.trim(),
+      email: fullEmail,
+      pass: regPass,
+      role: "Associate Engineer",
+      department: regDept
     };
 
-    const updated = [...staffDirectory, newStaff];
-    localStorage.setItem("cp_staff_directory", JSON.stringify(updated));
+    const updated = [...staffDirectory, newEmployee];
     setStaffDirectory(updated);
-
-    setSignupSuccess("Profile registered successfully. You may now log in.");
-    setSignupName('');
-    setSignupEmail('');
-    setSignupPass('');
-    addTelemetry(`[SIGNUP] New associate seat registered: ${email}`);
+    localStorage.setItem("cp_staff_directory", JSON.stringify(updated));
+    setRegSuccess(`Account provisioned! Log in using ${fullEmail}`);
+    setRegName(''); setRegHandle(''); setRegPass('');
+    addLog(newEmployee.name, `New corporate profile registered (${fullEmail})`);
   };
 
+  // Leadership Admin Login
   const handleAdminLogin = (e) => {
     e.preventDefault();
+    setAdminErr('');
     const email = adminEmail.trim().toLowerCase();
-    setAdminError('');
 
-    const admin = AUTHORIZED_ADMINS[email];
-    if (admin && adminPass === ADMIN_DEFAULT_PASS) {
-      const session = {
-        name: admin.name,
-        role: admin.title,
-        email: email,
-        accountType: "Admin"
-      };
-      localStorage.setItem("cp_current_session", JSON.stringify(session));
+    const admin = LEADERSHIP_ACCOUNTS[email];
+    if (admin && admin.pass === adminPass) {
+      const session = { name: admin.name, email, role: admin.role, department: "Executive Leadership", clearance: 'Admin' };
+      localStorage.setItem("cp_corp_session", JSON.stringify(session));
       setCurrentUser(session);
-      addTelemetry(`[CLEARANCE] Admin session initiated by ${admin.name}`);
+      setActiveTab('projects');
+      addLog(admin.name, "Executive root clearance verified");
     } else {
-      setAdminError("Unauthorized admin access or invalid security key.");
+      setAdminErr("Invalid security key or non-registered executive handle.");
     }
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("cp_current_session");
+    localStorage.removeItem("cp_corp_session");
     setCurrentUser(null);
-    setLoginEmail('');
-    setLoginPass('');
-    setAdminEmail('');
-    setAdminPass('');
+    setActiveTab('projects');
   };
 
-  const quickFillAdmin = (email) => {
-    setAdminEmail(email);
-    setAdminPass(ADMIN_DEFAULT_PASS);
-    setAdminError('');
-  };
+  // Add Project Deliverable
+  const handleAddProject = (e) => {
+    e.preventDefault();
+    if (!newClient.trim() || !newProjectName.trim()) return;
 
-  // -------------------------------------------------------------
-  // ADMIN MODULE OPERATIONS
-  // -------------------------------------------------------------
-  const terminateStaff = (index) => {
-    const updated = [...staffDirectory];
-    const removed = updated.splice(index, 1)[0];
-    localStorage.setItem("cp_staff_directory", JSON.stringify(updated));
-    setStaffDirectory(updated);
-    addTelemetry(`[CLEARANCE_REVOKED] Staff profile revoked: ${removed.email}`);
-    openModal("Access Revoked", `Successfully deactivated account and revoked domain access for ${removed.name} (${removed.email}).`);
-  };
-
-  const addNewEmployeeModal = () => {
-    const name = prompt("Enter Staff Full Name:");
-    if (!name || !name.trim()) return;
-    const email = prompt("Enter Corporate Email (@clientpilot.com):");
-    if (!email || !email.trim()) return;
-    const role = prompt("Enter Assigned Role:", "Operations Specialist");
-    const dept = prompt("Enter Department:", "Client Services");
-
-    const newStaff = {
-      name: name.trim(),
-      email: email.trim(),
-      pass: "user123",
-      role: role ? role.trim() : "Operations Specialist",
-      department: dept ? dept.trim() : "Client Services"
-    };
-
-    const updated = [...staffDirectory, newStaff];
-    localStorage.setItem("cp_staff_directory", JSON.stringify(updated));
-    setStaffDirectory(updated);
-    addTelemetry(`[PROVISION] New staff seat assigned to ${email.trim()}`);
-    openModal("Staff Provisioned", `Created authorized workspace seat for ${name.trim()} with default password: user123`);
-  };
-
-  // -------------------------------------------------------------
-  // USER MODULE OPERATIONS
-  // -------------------------------------------------------------
-  const openNewDealModal = () => {
-    const company = prompt("Enter Client Enterprise Name:");
-    if (!company || !company.trim()) return;
-    const val = prompt("Enter Estimated Value (e.g. 5.0):", "5.0");
-    if (!val || !val.trim()) return;
-
-    const newDeal = {
+    const newItem = {
       id: Date.now(),
-      company: company.trim(),
-      contact: "Primary Lead",
-      stage: "Inbound",
-      value: `₹${val.trim()}L`
+      client: newClient.trim(),
+      title: newProjectName.trim(),
+      budget: `₹${newBudget.trim() || '10.0'}L`,
+      progress: 10,
+      lead: newLead.trim() || currentUser.name,
+      status: newStatus,
+      deadline: "Q1 2027"
     };
 
-    const updated = [newDeal, ...clientAccounts];
-    setClientAccounts(updated);
-    localStorage.setItem("cp_clients_directory", JSON.stringify(updated));
-    addTelemetry(`[DEAL_ADDED] New opportunity created: ${company.trim()} (₹${val.trim()}L)`);
-    openModal("Opportunity Logged", `Added ${company.trim()} to active pipeline valued at ₹${val.trim()}L.`);
+    const updated = [newItem, ...projects];
+    setProjects(updated);
+    localStorage.setItem("cp_projects_data", JSON.stringify(updated));
+    addLog(currentUser.name, `Initiated new deliverable: ${newItem.title} for ${newItem.client}`);
+    setNewClient(''); setNewProjectName(''); setNewBudget(''); setNewLead('');
   };
 
-  const removeDeal = (id) => {
-    const updated = clientAccounts.filter(c => c.id !== id);
-    setClientAccounts(updated);
-    localStorage.setItem("cp_clients_directory", JSON.stringify(updated));
+  const handleUpdateProgress = (id) => {
+    const updated = projects.map(p => {
+      if (p.id === id) {
+        const next = p.progress >= 100 ? 100 : p.progress + 15;
+        return { ...p, progress: next, status: next === 100 ? "Completed & Deployed" : p.status };
+      }
+      return p;
+    });
+    setProjects(updated);
+    localStorage.setItem("cp_projects_data", JSON.stringify(updated));
+    addLog(currentUser.name, `Pushed sprint progress on Project #${id}`);
   };
 
-  const logCallFor = (client) => {
-    const note = prompt(`Enter call notes for ${client}:`);
-    if (note && note.trim()) {
-      setDailyCalls(prev => prev + 1);
-      addTelemetry(`[CALL_LOGGED] Call completed for ${client}`);
-      openModal("Call Registered", `Logged call for ${client}:\n"${note.trim()}"\n\nDaily call target updated (${dailyCalls + 1} / 25).`);
-    }
+  const handleDeleteProject = (id) => {
+    const updated = projects.filter(p => p.id !== id);
+    setProjects(updated);
+    localStorage.setItem("cp_projects_data", JSON.stringify(updated));
+    addLog(currentUser.name, `Archived deliverable #${id}`);
   };
 
-  const isAdmin = currentUser && (
-    currentUser.accountType === "Admin" ||
-    currentUser.role === "Administrator" ||
-    currentUser.role === "Executive Director" ||
-    currentUser.role === "Head of Operations" ||
-    currentUser.role === "Lead Systems & Security"
-  );
+  const isAdmin = currentUser && currentUser.clearance === 'Admin';
 
-  // =========================================================================
-  // VIEW A: AUTHENTICATION GATEWAY (index.html)
-  // =========================================================================
+  // ========================================================
+  // 1. AUTHENTICATION PORTAL
+  // ========================================================
   if (!currentUser) {
     return (
-      <div className="auth-page-wrapper">
-        <main className="main-box">
-          <section className="left-panel">
+      <div className="auth-wrapper">
+        <div className="auth-card">
+          <div className="auth-sidebar">
             <div>
-              <span className="badge">CRM WORKSPACE</span>
-              <h1 className="title">Client<br />Pilot</h1>
-              <p className="subtitle">Enterprise operations CRM with role-based access control, pipeline tracking, and internal audit telemetry.</p>
+              <span className="auth-badge">CORPORATE SUITE</span>
+              <h1>Client<br />Pilot</h1>
+              <p>Secure client account deliveries, sprint tracking, and role-governed workforce operations.</p>
             </div>
-            <div className="footer-tag">Domain Perimeter: <b>@clientpilot.com</b></div>
-          </section>
+            <div className="auth-domain-tag">
+              Network Domain: <b>@clientpilot.com</b>
+            </div>
+          </div>
 
-          <section className="right-panel">
-            <div className="module-switcher">
+          <div className="auth-main">
+            <div className="auth-tabs">
               <button
                 type="button"
-                className={`module-tab-btn ${activeModuleTab === 'user' ? 'active' : ''}`}
-                onClick={() => setActiveModuleTab('user')}
+                className={`auth-tab-btn ${authView === 'login' ? 'active' : ''}`}
+                onClick={() => setAuthView('login')}
               >
-                👤 User / Staff Module
+                Sign In
               </button>
               <button
                 type="button"
-                className={`module-tab-btn ${activeModuleTab === 'admin' ? 'active' : ''}`}
-                onClick={() => setActiveModuleTab('admin')}
+                className={`auth-tab-btn ${authView === 'register' ? 'active' : ''}`}
+                onClick={() => setAuthView('register')}
               >
-                🔒 Executive / Admin Module
+                New Employee Register
+              </button>
+              <button
+                type="button"
+                className={`auth-tab-btn ${authView === 'admin' ? 'active' : ''}`}
+                onClick={() => setAuthView('admin')}
+              >
+                Executive Access
               </button>
             </div>
 
-            {/* MODULE 1: USER / WORKER */}
-            {activeModuleTab === 'user' && (
-              <div className="forms-split-layout">
-                <div className="form-section">
-                  <h3>Team Login</h3>
-                  <p>Access your operational workspace</p>
-                  <form onSubmit={handleUserLogin}>
-                    <div className="input-group">
-                      <label>Corporate Email</label>
-                      <input
-                        type="email"
-                        placeholder="priya.s@clientpilot.com"
-                        value={loginEmail}
-                        onChange={(e) => setLoginEmail(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="input-group">
-                      <label>Password</label>
-                      <input
-                        type="password"
-                        placeholder="••••••••"
-                        value={loginPass}
-                        onChange={(e) => setLoginPass(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <button type="submit" className="submit-btn">Enter Workspace</button>
-                    {loginError && <div className="error-msg" style={{ display: 'block' }}>{loginError}</div>}
-                  </form>
-                </div>
+            {/* View A: Staff Sign In */}
+            {authView === 'login' && (
+              <form onSubmit={handleStaffLogin} style={{ maxWidth: '380px', margin: '0 auto' }}>
+                <h3 style={{ marginBottom: '4px' }}>Employee Login</h3>
+                <p style={{ color: '#64748b', fontSize: '13px', marginBottom: '16px' }}>Sign in with your verified company email</p>
 
-                <div className="divider">
-                  <div className="divider-line"></div>
-                  <span style={{ padding: '5px 0' }}>or</span>
-                  <div className="divider-line"></div>
+                <div className="form-group">
+                  <label>Company Email</label>
+                  <input
+                    type="email"
+                    placeholder="priya.sharma@clientpilot.com"
+                    value={loginEmail}
+                    onChange={e => setLoginEmail(e.target.value)}
+                    required
+                  />
                 </div>
-
-                <div className="form-section">
-                  <h3>Join the Team</h3>
-                  <p>Register an authorized seat</p>
-                  <form onSubmit={handleUserSignup}>
-                    <div className="input-group">
-                      <label>Full Name</label>
-                      <input
-                        type="text"
-                        placeholder="Aditya Rao"
-                        value={signupName}
-                        onChange={(e) => setSignupName(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="input-group">
-                      <label>Corporate Email</label>
-                      <input
-                        type="email"
-                        placeholder="aditya.r@clientpilot.com"
-                        value={signupEmail}
-                        onChange={(e) => setSignupEmail(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="input-group">
-                      <label>Set Password</label>
-                      <input
-                        type="password"
-                        placeholder="••••••••"
-                        value={signupPass}
-                        onChange={(e) => setSignupPass(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <button type="submit" className="submit-btn dark">Create Account</button>
-                    {signupError && <div className="error-msg" style={{ display: 'block' }}>{signupError}</div>}
-                    {signupSuccess && <div className="success-msg" style={{ display: 'block' }}>{signupSuccess}</div>}
-                  </form>
+                <div className="form-group">
+                  <label>Password</label>
+                  <input
+                    type="password"
+                    placeholder="••••••••••••"
+                    value={loginPass}
+                    onChange={e => setLoginPass(e.target.value)}
+                    required
+                  />
+                  <span style={{ fontSize: '11px', color: '#64748b' }}>Default staff test pass: <code>Priya#Secure2026</code></span>
                 </div>
-              </div>
+                <button type="submit" className="btn-primary">Authenticate Session</button>
+                {loginErr && <div className="msg-error">{loginErr}</div>}
+              </form>
             )}
 
-            {/* MODULE 2: ADMIN / EXECUTIVE */}
-            {activeModuleTab === 'admin' && (
-              <div className="admin-panel-content">
-                <div className="form-section">
-                  <h3>Administrator Gateway</h3>
-                  <p>Executive management, audit logs, and directory controls</p>
+            {/* View B: New Staff Onboarding */}
+            {authView === 'register' && (
+              <form onSubmit={handleStaffRegister} style={{ maxWidth: '380px', margin: '0 auto' }}>
+                <h3 style={{ marginBottom: '4px' }}>Employee Provisioning</h3>
+                <p style={{ color: '#64748b', fontSize: '13px', marginBottom: '16px' }}>Create your company credentials</p>
 
-                  <div className="quick-select-box">
-                    <div className="quick-title">Quick Select Authorized Admin:</div>
-                    <div className="fast-btn-group">
-                      <button type="button" className="fast-chip" onClick={() => quickFillAdmin('arjun.mehta@clientpilot.com')}>Arjun (Dir)</button>
-                      <button type="button" className="fast-chip" onClick={() => quickFillAdmin('kavita.nair@clientpilot.com')}>Kavita (Ops)</button>
-                      <button type="button" className="fast-chip" onClick={() => quickFillAdmin('rohit.verma@clientpilot.com')}>Rohit (Sec)</button>
-                    </div>
+                <div className="form-group">
+                  <label>Full Legal Name</label>
+                  <input
+                    type="text"
+                    placeholder="Kavya Ragupathy"
+                    value={regName}
+                    onChange={e => setRegName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Corporate Username</label>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <input
+                      type="text"
+                      placeholder="kavya.r"
+                      value={regHandle}
+                      onChange={e => setRegHandle(e.target.value)}
+                      required
+                      style={{ borderTopRightRadius: 0, borderBottomRightRadius: 0 }}
+                    />
+                    <span style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', borderLeft: 0, padding: '9px 12px', fontSize: '12px', fontWeight: '700', color: '#475569', borderRadius: '0 6px 6px 0' }}>
+                      @clientpilot.com
+                    </span>
                   </div>
-
-                  <form onSubmit={handleAdminLogin}>
-                    <div className="input-group">
-                      <label>Admin Corporate Email</label>
-                      <input
-                        type="email"
-                        placeholder="arjun.mehta@clientpilot.com"
-                        value={adminEmail}
-                        onChange={(e) => setAdminEmail(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="input-group">
-                      <label>Security Passkey</label>
-                      <input
-                        type="password"
-                        placeholder="••••••••"
-                        value={adminPass}
-                        onChange={(e) => setAdminPass(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <button type="submit" className="submit-btn dark">Authenticate Clearance</button>
-                    {adminError && <div className="error-msg" style={{ display: 'block' }}>{adminError}</div>}
-                  </form>
                 </div>
+                <div className="form-group">
+                  <label>Department</label>
+                  <select value={regDept} onChange={e => setRegDept(e.target.value)}>
+                    <option value="Software Engineering">Software Engineering</option>
+                    <option value="Cloud Infrastructure">Cloud Infrastructure</option>
+                    <option value="Product Architecture">Product Architecture</option>
+                    <option value="Client Success">Client Success</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Set Secure Password</label>
+                  <input
+                    type="password"
+                    placeholder="Min 6 characters"
+                    value={regPass}
+                    onChange={e => setRegPass(e.target.value)}
+                    required
+                  />
+                </div>
+                <button type="submit" className="btn-primary btn-dark">Register Employee Account</button>
+                {regErr && <div className="msg-error">{regErr}</div>}
+                {regSuccess && <div className="msg-success">{regSuccess}</div>}
+              </form>
+            )}
+
+            {/* View C: Leadership Gateway */}
+            {authView === 'admin' && (
+              <div style={{ maxWidth: '380px', margin: '0 auto' }}>
+                <div className="quick-admins">
+                  <p>Authorized Corporate Directors:</p>
+                  <div className="chips">
+                    <button type="button" className="chip-btn" onClick={() => { setAdminEmail("arjun.mehta@clientpilot.com"); setAdminPass("Arjun@Corp2026"); }}>Arjun (Director)</button>
+                    <button type="button" className="chip-btn" onClick={() => { setAdminEmail("kavita.nair@clientpilot.com"); setAdminPass("Kavita@Corp2026"); }}>Kavita (Ops)</button>
+                    <button type="button" className="chip-btn" onClick={() => { setAdminEmail("rohit.verma@clientpilot.com"); setAdminPass("Rohit@Corp2026"); }}>Rohit (Architect)</button>
+                  </div>
+                </div>
+
+                <form onSubmit={handleAdminLogin}>
+                  <div className="form-group">
+                    <label>Director Email</label>
+                    <input
+                      type="email"
+                      placeholder="arjun.mehta@clientpilot.com"
+                      value={adminEmail}
+                      onChange={e => setAdminEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Security Key</label>
+                    <input
+                      type="password"
+                      placeholder="••••••••••••"
+                      value={adminPass}
+                      onChange={e => setAdminPass(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <button type="submit" className="btn-primary btn-dark">Authenticate Executive Clearance</button>
+                  {adminErr && <div className="msg-error">{adminErr}</div>}
+                </form>
               </div>
             )}
-          </section>
-        </main>
+          </div>
+        </div>
       </div>
     );
   }
 
-  // =========================================================================
-  // VIEW B: HORIZONTAL ENTERPRISE CONSOLE (dashboard_2.html)
-  // =========================================================================
+  // ========================================================
+  // 2. MAIN LOGGED-IN WORKSPACE
+  // ========================================================
   return (
-    <div className={`dashboard-app ${isAdmin ? 'theme-admin' : 'theme-user'}`}>
-      {/* Top Bar */}
-      <header className="console-header">
-        <div className="header-left">
-          <div className="brand" onClick={() => openModal('ClientPilot Platform', 'Enterprise Operations Console v2.4\nCluster: ap-south-1\nStorage: LocalStorage Engine')}>
-            <div className="brand-logo">CP</div>
-            <div className="brand-text">
-              <span className="brand-title">ClientPilot</span>
-              <span className="brand-edition">{isAdmin ? 'EXECUTIVE CONSOLE' : 'STAFF CRM'}</span>
-            </div>
+    <div>
+      {/* Top Corporate Nav */}
+      <header className="topbar">
+        <div className="topbar-left">
+          <div className="brand-badge">
+            <div className="brand-icon">CP</div>
+            <span className="brand-title">ClientPilot</span>
           </div>
-
-          <div className="role-badge">
-            <span className="dot"></span>
-            <span>{isAdmin ? 'ADMIN ROOT CLEARANCE' : 'STAFF WORKBENCH'}</span>
-          </div>
+          <span className={`mode-badge ${isAdmin ? 'admin-badge' : 'user-badge'}`}>
+            {isAdmin ? 'EXECUTIVE CLEARANCE' : 'ENGINEERING WORKBENCH'}
+          </span>
         </div>
 
-        <div className="header-center">
-          <div className="console-search">
-            <span className="search-icon">🔍</span>
-            <input
-              type="text"
-              placeholder="Search accounts, transactions, logs..."
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') openModal('Search Results', `Matching records found across ap-south-1 nodes.`);
-              }}
-            />
-            <button type="button" className="search-btn" onClick={() => openModal('Search Results', `Found matching database records in current workspace.`)}>Search</button>
-          </div>
-        </div>
-
-        <div className="header-right">
-          <div className="region-pill">Region: <b>ap-south-1</b></div>
-          <div className="user-pill" onClick={() => openModal('User Session Information', `User: ${currentUser.name}\nEmail: ${currentUser.email}\nRole: ${currentUser.role}\nAccess Tier: ${isAdmin ? 'Root Clearance' : 'Staff Workbench'}`)}>
-            <div className="user-avatar">{currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}</div>
-            <div className="user-meta">
-              <div className="user-name">{currentUser.name || 'User'}</div>
-              <div className="user-role">{currentUser.role || 'Authorized Session'}</div>
-            </div>
-          </div>
-          <button className="logout-btn" onClick={handleLogout}>Sign Out</button>
+        <div className="topbar-right">
+          <span className="user-tag">{currentUser.name} • {currentUser.role}</span>
+          <button className="btn-logout" onClick={handleLogout}>Sign Out</button>
         </div>
       </header>
 
-      {/* Horizontal Sub-Navbar */}
-      <nav className="sub-navbar">
-        <div className="sub-nav-links">
-          {isAdmin ? (
-            <>
-              <button className={`sub-nav-item ${activeSubNav === 'Overview' ? 'active' : ''}`} onClick={() => setActiveSubNav('Overview')}>▦ Executive Overview</button>
-              <button className={`sub-nav-item ${activeSubNav === 'Staff' ? 'active' : ''}`} onClick={() => openModal('Staff Master Directory', `Active Personnel: ${staffDirectory.length} seats.\n\n` + staffDirectory.map(s => `• ${s.name} (${s.email}) — ${s.role}`).join('\n'))}>♟ Staff Master Control</button>
-              <button className={`sub-nav-item ${activeSubNav === 'Telemetry' ? 'active' : ''}`} onClick={() => openModal('Security Telemetry Logs', 'Real-time telemetry streams active. All write-back events are cryptographically recorded.')}>↗ Root Audit Telemetry</button>
-              <button className={`sub-nav-item ${activeSubNav === 'DB' ? 'active' : ''}`} onClick={() => openModal('Database Infrastructure', 'Cluster: Healthy\nReplica Count: 3\nStorage Node: localStorage active\nLatency: 14ms (ap-south-1)')}>⚙ Database Infrastructure</button>
-            </>
-          ) : (
-            <>
-              <button className={`sub-nav-item ${activeSubNav === 'Overview' ? 'active' : ''}`} onClick={() => setActiveSubNav('Overview')}>▦ My Workspace</button>
-              <button className={`sub-nav-item ${activeSubNav === 'Accounts' ? 'active' : ''}`} onClick={() => openModal('Assigned Accounts', '• Apex Core Systems — Tech Proposal Under Review\n• FinTech Dynamics — Commercial Negotiation\n• MediCore Health — Execution Pending\n• GlobalTech Infra — Discovery Call Scheduled')}>♙ My Client Accounts</button>
-              <button className={`sub-nav-item ${activeSubNav === 'Pipeline' ? 'active' : ''}`} onClick={openNewDealModal}>◆ Active Pipeline</button>
-              <button className={`sub-nav-item ${activeSubNav === 'Schedule' ? 'active' : ''}`} onClick={() => openModal("Today's Schedule", "• 11:30 AM — TechNova RFP Discussion\n• 02:30 PM — FinTech Dynamics Demonstration\n• 04:45 PM — Commercial Follow-ups with Apex Core")}>◷ My Schedule</button>
-            </>
-          )}
-        </div>
-        <div className="sub-nav-meta">● Systems Operational</div>
+      {/* Main Tab Navigation */}
+      <nav className="tab-navbar">
+        <button
+          className={`menu-tab-btn ${activeTab === 'projects' ? 'active' : ''}`}
+          onClick={() => setActiveTab('projects')}
+        >
+          📂 Active Projects & Deliverables ({projects.length})
+        </button>
+        <button
+          className={`menu-tab-btn ${activeTab === 'staff' ? 'active' : ''}`}
+          onClick={() => setActiveTab('staff')}
+        >
+          👥 Engineering Roster ({staffDirectory.length})
+        </button>
+        <button
+          className={`menu-tab-btn ${activeTab === 'telemetry' ? 'active' : ''}`}
+          onClick={() => setActiveTab('telemetry')}
+        >
+          📜 Audit & Release Telemetry ({auditLogs.length})
+        </button>
       </nav>
 
-      {/* Viewport Content */}
-      <main className="console-viewport">
-        {/* ======================================= */}
-        {/* 1. USER / STAFF WORKBENCH VIEW          */}
-        {/* ======================================= */}
-        {!isAdmin && (
+      {/* Workspace Content */}
+      <main className="workspace-container">
+        {/* ============================================================ */}
+        {/* TAB 1: REAL COMPANY PROJECTS & DELIVERABLES                  */}
+        {/* ============================================================ */}
+        {activeTab === 'projects' && (
           <div>
-            <div className="banner user-banner">
+            <div className={`welcome-banner ${isAdmin ? 'admin-border' : ''}`}>
               <div>
-                <span className="banner-pill">STAFF SEAT</span>
-                <h2>Good day, {currentUser.name ? currentUser.name.split(' ')[0] : 'Staff Member'}</h2>
-                <p>Operational CRM: Manage your customer pipeline, record outreach, and log calls.</p>
+                <h2>{isAdmin ? "Corporate Deliverables & Portfolio Status" : `Welcome back, ${currentUser.name}`}</h2>
+                <p>Tracking milestone deliveries, budgets, and engineering sprints across verified client contracts.</p>
               </div>
-              <button className="primary-btn" onClick={openNewDealModal}>+ Log New Deal</button>
+              <span className="tag-pill tag-green" style={{ fontSize: '13px', padding: '6px 12px' }}>● 100% On Schedule</span>
             </div>
 
-            <section className="kpi-grid">
-              <div className="kpi-card">
-                <div className="kpi-label">My Active Deals</div>
-                <div className="kpi-value">{clientAccounts.length}</div>
-                <div className="kpi-sub">Proposals tracked in realtime</div>
+            {/* KPI Cards */}
+            <div className="kpi-row">
+              <div className="kpi-box">
+                <div className="kpi-title">Active Client Contracts</div>
+                <div className="kpi-num">{projects.length}</div>
+                <div className="kpi-detail">Committed across Q4</div>
               </div>
-              <div className="kpi-card">
-                <div className="kpi-label">Calls Completed Today</div>
-                <div className="kpi-value">{dailyCalls} / 25</div>
-                <div className="kpi-sub positive">{Math.round((dailyCalls / 25) * 100)}% of daily quota</div>
+              <div className="kpi-box">
+                <div className="kpi-title">Total Project Value</div>
+                <div className="kpi-num">₹54.7L</div>
+                <div className="kpi-detail">Tracked in local storage</div>
               </div>
-              <div className="kpi-card">
-                <div className="kpi-label">Personal Pipeline</div>
-                <div className="kpi-value">₹24.6L</div>
-                <div className="kpi-sub">₹9.2L expected this month</div>
+              <div className="kpi-box">
+                <div className="kpi-title">Milestone Success Rate</div>
+                <div className="kpi-num">94.2%</div>
+                <div className="kpi-detail">QA verification passed</div>
               </div>
-              <div className="kpi-card">
-                <div className="kpi-label">Follow-up SLA</div>
-                <div className="kpi-value">100%</div>
-                <div className="kpi-sub positive">0 tickets overdue</div>
+              <div className="kpi-box">
+                <div className="kpi-title">Deployment Region</div>
+                <div className="kpi-num">ap-south-1</div>
+                <div className="kpi-detail">Zero downtime</div>
               </div>
-            </section>
+            </div>
 
-            <div className="dashboard-grid">
-              <div className="grid-col">
-                <div className="card">
-                  <div className="card-header">
-                    <h3>My Assigned Client Accounts</h3>
-                    <button className="link-btn" onClick={() => openModal('Full Client Roster', 'All enterprise accounts synchronized with ap-south-1 nodes.')}>View Full Roster →</button>
-                  </div>
-                  <table className="data-table">
-                    <thead>
-                      <tr>
-                        <th>Client / Enterprise</th>
-                        <th>Contact</th>
-                        <th>Stage</th>
-                        <th>Value</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {clientAccounts.map(account => (
-                        <tr key={account.id}>
-                          <td><b>{account.company}</b></td>
-                          <td>{account.contact}</td>
-                          <td>
-                            <span className={`tag ${account.stage === 'Proposal' ? 'tag-blue' : account.stage === 'Negotiation' ? 'tag-orange' : 'tag-green'}`}>
-                              {account.stage}
-                            </span>
-                          </td>
-                          <td>{account.value}</td>
-                          <td style={{ display: 'flex', gap: '4px' }}>
-                            <button className="table-action-btn" onClick={() => logCallFor(account.company)}>Call</button>
-                            <button className="table-action-btn danger" onClick={() => removeDeal(account.id)}>✕</button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                <div className="card">
-                  <div className="card-header">
-                    <h3>Pipeline Progress Visualizer</h3>
-                  </div>
-                  <div className="chart-flex">
-                    <div className="bar-unit"><div className="bar" style={{ height: '85%' }}></div><span>Leads (28)</span></div>
-                    <div className="bar-unit"><div className="bar" style={{ height: '60%' }}></div><span>Contacted (19)</span></div>
-                    <div className="bar-unit"><div className="bar" style={{ height: '45%' }}></div><span>Proposal (14)</span></div>
-                    <div className="bar-unit"><div className="bar green-bar" style={{ height: '30%' }}></div><span>Closed (8)</span></div>
-                  </div>
+            {/* Form to Add New Practical Project */}
+            <div className="card-panel">
+              <div className="panel-header">
+                <div>
+                  <h3>+ Initialize New Client Deliverable</h3>
+                  <p className="panel-sub">Assign enterprise contracts to project leads</p>
                 </div>
               </div>
+              <form onSubmit={handleAddProject} className="inline-form">
+                <input
+                  type="text"
+                  placeholder="Enterprise Client (e.g. HDFC Core)"
+                  value={newClient}
+                  onChange={e => setNewClient(e.target.value)}
+                  required
+                  style={{ flex: 1, minWidth: '180px' }}
+                />
+                <input
+                  type="text"
+                  placeholder="Project Title (e.g. Cloud Auth Module)"
+                  value={newProjectName}
+                  onChange={e => setNewProjectName(e.target.value)}
+                  required
+                  style={{ flex: 1, minWidth: '200px' }}
+                />
+                <input
+                  type="number"
+                  step="0.5"
+                  placeholder="Budget in Lakhs (₹)"
+                  value={newBudget}
+                  onChange={e => setNewBudget(e.target.value)}
+                  style={{ width: '150px' }}
+                />
+                <input
+                  type="text"
+                  placeholder="Project Lead"
+                  value={newLead}
+                  onChange={e => setNewLead(e.target.value)}
+                  style={{ width: '150px' }}
+                />
+                <select value={newStatus} onChange={e => setNewStatus(e.target.value)}>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Testing & QA">Testing & QA</option>
+                  <option value="Sprint 1">Sprint 1</option>
+                  <option value="Completed">Completed</option>
+                </select>
+                <button type="submit" className="btn-primary" style={{ width: 'auto' }}>Create Contract</button>
+              </form>
+            </div>
 
-              <div className="grid-col side-col">
-                <div className="card">
-                  <div className="card-header">
-                    <h3>Quick Actions</h3>
-                  </div>
-                  <div className="tool-buttons">
-                    <button className="tool-btn" onClick={() => logCallFor('Direct Account')}>📞 Log Client Call</button>
-                    <button className="tool-btn" onClick={() => {
-                      const note = prompt('Enter meeting note:');
-                      if (note) openModal('Meeting Note Saved', `Saved:\n"${note.trim()}"`);
-                    }}>📝 Record Meeting Note</button>
-                    <button className="tool-btn" onClick={openNewDealModal}>💼 Add Opportunity</button>
-                  </div>
-                </div>
-
-                <div className="card">
-                  <div className="card-header">
-                    <h3>Today's Outreach Schedule</h3>
-                  </div>
-                  <ul className="task-list">
-                    <li><span className="task-time">11:30 AM</span><div><b>TechNova Review</b> — Call procurement team</div></li>
-                    <li><span className="task-time">02:30 PM</span><div><b>FinTech Demo</b> — Architecture walkthrough</div></li>
-                    <li><span className="task-time">04:45 PM</span><div><b>Apex Follow-up</b> — Check draft sign-off</div></li>
-                  </ul>
-                </div>
+            {/* Projects Table with Progress Trackers */}
+            <div className="card-panel">
+              <div className="panel-header">
+                <h3>Live Contract Deliverables Roster</h3>
               </div>
+              <table className="content-table">
+                <thead>
+                  <tr>
+                    <th>Client Enterprise</th>
+                    <th>Deliverable Title</th>
+                    <th>Lead Architect</th>
+                    <th>Budget</th>
+                    <th>Sprint Progress</th>
+                    <th>Stage Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {projects.map(p => (
+                    <tr key={p.id}>
+                      <td><b>{p.client}</b></td>
+                      <td>{p.title}</td>
+                      <td>{p.lead}</td>
+                      <td><b>{p.budget}</b></td>
+                      <td style={{ width: '180px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div style={{ flex: 1, background: '#e2e8f0', borderRadius: '4px', height: '8px', overflow: 'hidden' }}>
+                            <div style={{ width: `${p.progress}%`, background: p.progress === 100 ? '#10b981' : '#2563eb', height: '100%' }}></div>
+                          </div>
+                          <span style={{ fontSize: '11px', fontWeight: '700' }}>{p.progress}%</span>
+                        </div>
+                      </td>
+                      <td>
+                        <span className={`tag-pill ${p.progress === 100 ? 'tag-green' : p.status.includes('QA') ? 'tag-amber' : 'tag-blue'}`}>
+                          {p.status}
+                        </span>
+                      </td>
+                      <td style={{ display: 'flex', gap: '6px' }}>
+                        <button className="btn-small" onClick={() => handleUpdateProgress(p.id)}>+ Milestone</button>
+                        <button className="btn-small danger" onClick={() => handleDeleteProject(p.id)}>Archive</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         )}
 
-        {/* ======================================= */}
-        {/* 2. ADMIN / EXECUTIVE GOVERNANCE VIEW    */}
-        {/* ======================================= */}
-        {isAdmin && (
-          <div>
-            <div className="banner admin-banner">
+        {/* ============================================================ */}
+        {/* TAB 2: STAFF & ENGINEERING DIRECTORY                         */}
+        {/* ============================================================ */}
+        {activeTab === 'staff' && (
+          <div className="card-panel">
+            <div className="panel-header">
               <div>
-                <span className="banner-pill admin-pill">ROOT EXECUTIVE CLEARANCE</span>
-                <h2>Admin Governance Console: {currentUser.name || 'Administrator'}</h2>
-                <p>Organizational oversight: Employee master control, enterprise revenue metrics, and security audit telemetry.</p>
+                <h3>Authorized Corporate Workforce</h3>
+                <p className="panel-sub">Verified accounts permitted on `@clientpilot.com` perimeter</p>
               </div>
-              <button className="admin-primary-btn" onClick={addNewEmployeeModal}>+ Provision New Staff Account</button>
+              <span className="tag-pill tag-blue">{staffDirectory.length} Active Accounts</span>
             </div>
+            <table className="content-table">
+              <thead>
+                <tr>
+                  <th>Employee Name</th>
+                  <th>Corporate Email</th>
+                  <th>Department</th>
+                  <th>Engineering Role</th>
+                  <th>Perimeter Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {staffDirectory.map((member, i) => (
+                  <tr key={i}>
+                    <td><b>{member.name}</b></td>
+                    <td><code>{member.email}</code></td>
+                    <td>{member.department}</td>
+                    <td><span className="tag-pill tag-amber">{member.role}</span></td>
+                    <td><span className="tag-pill tag-green">Verified Active</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
-            <section className="kpi-grid">
-              <div className="kpi-card">
-                <div className="kpi-label">Annual Run Rate (ARR)</div>
-                <div className="kpi-value">₹1.84 Cr</div>
-                <div className="kpi-sub positive">↑ 22.4% year-over-year</div>
+        {/* ============================================================ */}
+        {/* TAB 3: AUDIT & RELEASE TELEMETRY                             */}
+        {/* ============================================================ */}
+        {activeTab === 'telemetry' && (
+          <div className="card-panel">
+            <div className="panel-header">
+              <div>
+                <h3>Internal Audit & Release Telemetry</h3>
+                <p className="panel-sub">Live timestamped record of authentications, milestone advancements, and contracts</p>
               </div>
-              <div className="kpi-card">
-                <div className="kpi-label">Authorized Staff Seats</div>
-                <div className="kpi-value">{staffDirectory.length} Active</div>
-                <div className="kpi-sub">Across Sales & Support Depts</div>
-              </div>
-              <div className="kpi-card">
-                <div className="kpi-label">System Security Status</div>
-                <div className="kpi-value text-green">Optimal</div>
-                <div className="kpi-sub">0 unauthorized intrusion attempts</div>
-              </div>
-              <div className="kpi-card">
-                <div className="kpi-label">Database Storage Nodes</div>
-                <div className="kpi-value">4 / 4 Online</div>
-                <div className="kpi-sub">Latency: 14ms (ap-south-1)</div>
-              </div>
-            </section>
-
-            <div className="dashboard-grid">
-              <div className="grid-col">
-                <div className="card">
-                  <div className="card-header">
-                    <div>
-                      <h3>Staff Directory Management</h3>
-                      <p className="card-sub">Manage corporate clearance, departments, and credentials</p>
-                    </div>
-                    <button className="admin-primary-btn small" onClick={addNewEmployeeModal}>+ Add Staff</button>
-                  </div>
-                  <table className="data-table">
-                    <thead>
-                      <tr>
-                        <th>Staff Member</th>
-                        <th>Email Address</th>
-                        <th>Department</th>
-                        <th>Access Clearance</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {staffDirectory.map((member, index) => (
-                        <tr key={index}>
-                          <td><b>{member.name}</b></td>
-                          <td>{member.email}</td>
-                          <td>{member.department || "Operations"}</td>
-                          <td><span className="tag tag-admin">{member.role || "Associate"}</span></td>
-                          <td><button className="table-action-btn danger" onClick={() => terminateStaff(index)}>Revoke</button></td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              <button className="btn-small" onClick={() => addLog(currentUser.name, "Manual diagnostics probe verified 100% OK")}>+ Run Diagnostic Ping</button>
+            </div>
+            <div className="terminal-box">
+              {auditLogs.map((log, index) => (
+                <div className="log-row" key={index}>
+                  <span className="log-time">[{log.time}]</span>
+                  <span style={{ color: '#f59e0b', fontWeight: 'bold' }}>{log.actor}:</span>
+                  <span className="log-text">{log.action}</span>
                 </div>
-
-                <div className="card">
-                  <div className="card-header">
-                    <h3>Enterprise Department Allocations</h3>
-                  </div>
-                  <div className="dept-summary-row">
-                    <div className="dept-box">
-                      <span className="dept-name">Client Acquisition</span>
-                      <span className="dept-stat">6 Members • ₹84L Pipeline</span>
-                    </div>
-                    <div className="dept-box">
-                      <span className="dept-name">Customer Success</span>
-                      <span className="dept-stat">4 Members • 98% Health</span>
-                    </div>
-                    <div className="dept-box">
-                      <span className="dept-name">Security & Infra</span>
-                      <span className="dept-stat">2 Members • Zero Downtime</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid-col side-col">
-                <div className="card">
-                  <div className="card-header">
-                    <h3>Root Telemetry & Audit Stream</h3>
-                    <button className="link-btn" onClick={() => setTelemetryLogs([])}>Clear</button>
-                  </div>
-                  <div className="telemetry-feed">
-                    {telemetryLogs.map((log, i) => (
-                      <div className="log-item" key={i}>
-                        <span className="log-time">{log.time}</span>
-                        <div>{log.text}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="card">
-                  <div className="card-header">
-                    <h3>Executive Controls</h3>
-                  </div>
-                  <div className="tool-buttons">
-                    <button className="tool-btn" onClick={() => openModal('Audit Telemetry Export', 'Generated SHA-256 encrypted access logs for current fiscal quarter. Ready for compliance download.')}>📑 Download Audit Report</button>
-                    <button className="tool-btn" onClick={() => {
-                      addTelemetry('[DB_BACKUP] Manual sync completed across nodes in ap-south-1');
-                      openModal('Database Snapshot', 'Synchronized LocalStorage state across redundant replica buckets. 0 errors detected.');
-                    }}>💾 Trigger Manual DB Backup</button>
-                    <button className="tool-btn danger" onClick={() => {
-                      if (window.confirm("Reset local mock data back to defaults?")) {
-                        localStorage.clear();
-                        window.location.reload();
-                      }
-                    }}>⚠️ Reset Workspace Demo Data</button>
-                  </div>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         )}
       </main>
-
-      {/* Reusable Modal Dialog */}
-      {modal.isOpen && (
-        <div className="modal-overlay">
-          <div className="modal-box">
-            <div className="modal-header">
-              <h4>{modal.title}</h4>
-              <button className="close-x" onClick={closeModal}>✕</button>
-            </div>
-            <div className="modal-body">{modal.body}</div>
-            <div className="modal-footer">
-              <button className="primary-btn" onClick={closeModal}>Close</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
