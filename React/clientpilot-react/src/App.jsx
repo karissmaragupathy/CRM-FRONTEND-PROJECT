@@ -4,7 +4,7 @@ import './App.css';
 const DOMAIN_RESTRICTION = "@clientpilot.com";
 const ADMIN_DEFAULT_PASS = "admin123";
 
-// 3 Default Authorized Admins from your auth.js
+// 3 Default Authorized Admins from your project
 const AUTHORIZED_ADMINS = {
   "arjun.mehta@clientpilot.com": { name: "Arjun Mehta", title: "Executive Director" },
   "kavita.nair@clientpilot.com": { name: "Kavita Nair", title: "Head of Operations" },
@@ -33,22 +33,19 @@ export default function App() {
 
   // Dashboard Data State
   const [staffDirectory, setStaffDirectory] = useState([]);
-  const [clientAccounts, setClientAccounts] = useState([
-    { id: 1, company: 'Apex Core Systems', contact: 'Ananya Rao', stage: 'Proposal', value: '₹7.8L' },
-    { id: 2, company: 'FinTech Dynamics', contact: 'Rohan Mehta', stage: 'Negotiation', value: '₹12.4L' },
-    { id: 3, company: 'MediCore Health', contact: 'Vikram Nair', stage: 'Contract Sent', value: '₹4.5L' }
-  ]);
+  const [clientAccounts, setClientAccounts] = useState([]);
   const [telemetryLogs, setTelemetryLogs] = useState([
     { time: '11:15:02', text: '[AUTH] Staff login successful: priya.s@clientpilot.com' },
     { time: '10:48:19', text: '[DB_SYNC] Incremental backup completed across ap-south-1 nodes' },
     { time: '09:30:00', text: '[CLEARANCE] Admin session initiated by Arjun Mehta' }
   ]);
+  const [dailyCalls, setDailyCalls] = useState(18);
   const [activeSubNav, setActiveSubNav] = useState('Overview');
   const [modal, setModal] = useState({ isOpen: false, title: '', body: '' });
 
-  // Initialize data on component load
+  // 1. Initial LocalStorage Synchronization
   useEffect(() => {
-    // 1. Check existing session
+    // Session
     const rawSession = localStorage.getItem("cp_current_session");
     if (rawSession) {
       try {
@@ -58,7 +55,7 @@ export default function App() {
       }
     }
 
-    // 2. Initialize staff directory (from your auth.js seed)
+    // Staff Directory
     const existingStaff = localStorage.getItem("cp_staff_directory");
     if (!existingStaff) {
       const seedStaff = [
@@ -70,19 +67,35 @@ export default function App() {
     } else {
       setStaffDirectory(JSON.parse(existingStaff));
     }
+
+    // Client Accounts
+    const existingClients = localStorage.getItem("cp_clients_directory");
+    if (!existingClients) {
+      const seedClients = [
+        { id: 1, company: 'Apex Core Systems', contact: 'Ananya Rao', stage: 'Proposal', value: '₹7.8L' },
+        { id: 2, company: 'FinTech Dynamics', contact: 'Rohan Mehta', stage: 'Negotiation', value: '₹12.4L' },
+        { id: 3, company: 'MediCore Health', contact: 'Vikram Nair', stage: 'Contract Sent', value: '₹4.5L' }
+      ];
+      localStorage.setItem("cp_clients_directory", JSON.stringify(seedClients));
+      setClientAccounts(seedClients);
+    } else {
+      setClientAccounts(JSON.parse(existingClients));
+    }
   }, []);
 
-  // Modal Helpers
+  // Modal helpers
   const openModal = (title, body) => setModal({ isOpen: true, title, body });
   const closeModal = () => setModal({ isOpen: false, title: '', body: '' });
 
-  // Telemetry helper
+  // Real-time audit log generator
   const addTelemetry = (msg) => {
     const time = new Date().toTimeString().split(' ')[0];
     setTelemetryLogs(prev => [{ time, text: msg }, ...prev]);
   };
 
-  // Auth: User Login
+  // -------------------------------------------------------------
+  // AUTHENTICATION LOGIC
+  // -------------------------------------------------------------
   const handleUserLogin = (e) => {
     e.preventDefault();
     const email = loginEmail.trim().toLowerCase();
@@ -109,7 +122,6 @@ export default function App() {
     }
   };
 
-  // Auth: User Registration
   const handleUserSignup = (e) => {
     e.preventDefault();
     const email = signupEmail.trim().toLowerCase();
@@ -146,7 +158,6 @@ export default function App() {
     addTelemetry(`[SIGNUP] New associate seat registered: ${email}`);
   };
 
-  // Auth: Admin Login
   const handleAdminLogin = (e) => {
     e.preventDefault();
     const email = adminEmail.trim().toLowerCase();
@@ -168,7 +179,6 @@ export default function App() {
     }
   };
 
-  // Logout
   const handleLogout = () => {
     localStorage.removeItem("cp_current_session");
     setCurrentUser(null);
@@ -178,14 +188,15 @@ export default function App() {
     setAdminPass('');
   };
 
-  // Fast autofill for Admin
   const quickFillAdmin = (email) => {
     setAdminEmail(email);
     setAdminPass(ADMIN_DEFAULT_PASS);
     setAdminError('');
   };
 
-  // Staff Termination (Admin Function)
+  // -------------------------------------------------------------
+  // ADMIN MODULE OPERATIONS
+  // -------------------------------------------------------------
   const terminateStaff = (index) => {
     const updated = [...staffDirectory];
     const removed = updated.splice(index, 1)[0];
@@ -195,7 +206,6 @@ export default function App() {
     openModal("Access Revoked", `Successfully deactivated account and revoked domain access for ${removed.name} (${removed.email}).`);
   };
 
-  // Add Staff (Admin Function)
   const addNewEmployeeModal = () => {
     const name = prompt("Enter Staff Full Name:");
     if (!name || !name.trim()) return;
@@ -219,7 +229,9 @@ export default function App() {
     openModal("Staff Provisioned", `Created authorized workspace seat for ${name.trim()} with default password: user123`);
   };
 
-  // Add Deal (User Function)
+  // -------------------------------------------------------------
+  // USER MODULE OPERATIONS
+  // -------------------------------------------------------------
   const openNewDealModal = () => {
     const company = prompt("Enter Client Enterprise Name:");
     if (!company || !company.trim()) return;
@@ -234,19 +246,28 @@ export default function App() {
       value: `₹${val.trim()}L`
     };
 
-    setClientAccounts([newDeal, ...clientAccounts]);
+    const updated = [newDeal, ...clientAccounts];
+    setClientAccounts(updated);
+    localStorage.setItem("cp_clients_directory", JSON.stringify(updated));
+    addTelemetry(`[DEAL_ADDED] New opportunity created: ${company.trim()} (₹${val.trim()}L)`);
     openModal("Opportunity Logged", `Added ${company.trim()} to active pipeline valued at ₹${val.trim()}L.`);
   };
 
-  // Helper actions
+  const removeDeal = (id) => {
+    const updated = clientAccounts.filter(c => c.id !== id);
+    setClientAccounts(updated);
+    localStorage.setItem("cp_clients_directory", JSON.stringify(updated));
+  };
+
   const logCallFor = (client) => {
     const note = prompt(`Enter call notes for ${client}:`);
     if (note && note.trim()) {
-      openModal("Call Registered", `Logged call for ${client}:\n"${note.trim()}"\n\nDaily target updated.`);
+      setDailyCalls(prev => prev + 1);
+      addTelemetry(`[CALL_LOGGED] Call completed for ${client}`);
+      openModal("Call Registered", `Logged call for ${client}:\n"${note.trim()}"\n\nDaily call target updated (${dailyCalls + 1} / 25).`);
     }
   };
 
-  // Check role
   const isAdmin = currentUser && (
     currentUser.accountType === "Admin" ||
     currentUser.role === "Administrator" ||
@@ -256,7 +277,7 @@ export default function App() {
   );
 
   // =========================================================================
-  // VIEW 1: AUTHENTICATION (index.html)
+  // VIEW A: AUTHENTICATION GATEWAY (index.html)
   // =========================================================================
   if (!currentUser) {
     return (
@@ -419,14 +440,14 @@ export default function App() {
   }
 
   // =========================================================================
-  // VIEW 2: HORIZONTAL CONSOLE DASHBOARD (dashboard_2.html)
+  // VIEW B: HORIZONTAL ENTERPRISE CONSOLE (dashboard_2.html)
   // =========================================================================
   return (
     <div className={`dashboard-app ${isAdmin ? 'theme-admin' : 'theme-user'}`}>
-      {/* Top Header */}
+      {/* Top Bar */}
       <header className="console-header">
         <div className="header-left">
-          <div className="brand" onClick={() => openModal('ClientPilot Platform', 'Enterprise Client Operations Platform v2.4\nCluster: ap-south-1')}>
+          <div className="brand" onClick={() => openModal('ClientPilot Platform', 'Enterprise Operations Console v2.4\nCluster: ap-south-1\nStorage: LocalStorage Engine')}>
             <div className="brand-logo">CP</div>
             <div className="brand-text">
               <span className="brand-title">ClientPilot</span>
@@ -443,16 +464,20 @@ export default function App() {
         <div className="header-center">
           <div className="console-search">
             <span className="search-icon">🔍</span>
-            <input type="text" placeholder="Search accounts, transactions, logs..." onKeyDown={(e) => {
-              if (e.key === 'Enter') openModal('Search Results', `Query matched 4 accounts in ap-south-1.`);
-            }} />
+            <input
+              type="text"
+              placeholder="Search accounts, transactions, logs..."
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') openModal('Search Results', `Matching records found across ap-south-1 nodes.`);
+              }}
+            />
             <button type="button" className="search-btn" onClick={() => openModal('Search Results', `Found matching database records in current workspace.`)}>Search</button>
           </div>
         </div>
 
         <div className="header-right">
           <div className="region-pill">Region: <b>ap-south-1</b></div>
-          <div className="user-pill" onClick={() => openModal('User Session', `User: ${currentUser.name}\nEmail: ${currentUser.email}\nRole: ${currentUser.role}`)}>
+          <div className="user-pill" onClick={() => openModal('User Session Information', `User: ${currentUser.name}\nEmail: ${currentUser.email}\nRole: ${currentUser.role}\nAccess Tier: ${isAdmin ? 'Root Clearance' : 'Staff Workbench'}`)}>
             <div className="user-avatar">{currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}</div>
             <div className="user-meta">
               <div className="user-name">{currentUser.name || 'User'}</div>
@@ -470,8 +495,8 @@ export default function App() {
             <>
               <button className={`sub-nav-item ${activeSubNav === 'Overview' ? 'active' : ''}`} onClick={() => setActiveSubNav('Overview')}>▦ Executive Overview</button>
               <button className={`sub-nav-item ${activeSubNav === 'Staff' ? 'active' : ''}`} onClick={() => openModal('Staff Master Directory', `Active Personnel: ${staffDirectory.length} seats.\n\n` + staffDirectory.map(s => `• ${s.name} (${s.email}) — ${s.role}`).join('\n'))}>♟ Staff Master Control</button>
-              <button className={`sub-nav-item ${activeSubNav === 'Telemetry' ? 'active' : ''}`} onClick={() => openModal('Security Telemetry Logs', 'All session authentications, write-back commits, and clearance changes are audited in real time.')}>↗ Root Audit Telemetry</button>
-              <button className={`sub-nav-item ${activeSubNav === 'DB' ? 'active' : ''}`} onClick={() => openModal('Database Infrastructure', 'Cluster: Healthy\nReplica Count: 3\nLatency: 14ms\nStorage Node: localStorage active')}>⚙ Database Infrastructure</button>
+              <button className={`sub-nav-item ${activeSubNav === 'Telemetry' ? 'active' : ''}`} onClick={() => openModal('Security Telemetry Logs', 'Real-time telemetry streams active. All write-back events are cryptographically recorded.')}>↗ Root Audit Telemetry</button>
+              <button className={`sub-nav-item ${activeSubNav === 'DB' ? 'active' : ''}`} onClick={() => openModal('Database Infrastructure', 'Cluster: Healthy\nReplica Count: 3\nStorage Node: localStorage active\nLatency: 14ms (ap-south-1)')}>⚙ Database Infrastructure</button>
             </>
           ) : (
             <>
@@ -485,10 +510,10 @@ export default function App() {
         <div className="sub-nav-meta">● Systems Operational</div>
       </nav>
 
-      {/* Main Viewport */}
+      {/* Viewport Content */}
       <main className="console-viewport">
         {/* ======================================= */}
-        {/* VIEW A: USER / STAFF CONSOLE            */}
+        {/* 1. USER / STAFF WORKBENCH VIEW          */}
         {/* ======================================= */}
         {!isAdmin && (
           <div>
@@ -505,12 +530,12 @@ export default function App() {
               <div className="kpi-card">
                 <div className="kpi-label">My Active Deals</div>
                 <div className="kpi-value">{clientAccounts.length}</div>
-                <div className="kpi-sub">5 proposals pending signature</div>
+                <div className="kpi-sub">Proposals tracked in realtime</div>
               </div>
               <div className="kpi-card">
                 <div className="kpi-label">Calls Completed Today</div>
-                <div className="kpi-value">18 / 25</div>
-                <div className="kpi-sub positive">72% of daily quota</div>
+                <div className="kpi-value">{dailyCalls} / 25</div>
+                <div className="kpi-sub positive">{Math.round((dailyCalls / 25) * 100)}% of daily quota</div>
               </div>
               <div className="kpi-card">
                 <div className="kpi-label">Personal Pipeline</div>
@@ -529,7 +554,7 @@ export default function App() {
                 <div className="card">
                   <div className="card-header">
                     <h3>My Assigned Client Accounts</h3>
-                    <button className="link-btn" onClick={() => openModal('Full Client Roster', 'All 4 enterprise accounts synchronized with ap-south-1 nodes.')}>View Full Roster →</button>
+                    <button className="link-btn" onClick={() => openModal('Full Client Roster', 'All enterprise accounts synchronized with ap-south-1 nodes.')}>View Full Roster →</button>
                   </div>
                   <table className="data-table">
                     <thead>
@@ -552,7 +577,10 @@ export default function App() {
                             </span>
                           </td>
                           <td>{account.value}</td>
-                          <td><button className="table-action-btn" onClick={() => logCallFor(account.company)}>Call</button></td>
+                          <td style={{ display: 'flex', gap: '4px' }}>
+                            <button className="table-action-btn" onClick={() => logCallFor(account.company)}>Call</button>
+                            <button className="table-action-btn danger" onClick={() => removeDeal(account.id)}>✕</button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -603,7 +631,7 @@ export default function App() {
         )}
 
         {/* ======================================= */}
-        {/* VIEW B: ADMIN / EXECUTIVE CONSOLE       */}
+        {/* 2. ADMIN / EXECUTIVE GOVERNANCE VIEW    */}
         {/* ======================================= */}
         {isAdmin && (
           <div>
@@ -734,7 +762,7 @@ export default function App() {
         )}
       </main>
 
-      {/* Modal Dialog */}
+      {/* Reusable Modal Dialog */}
       {modal.isOpen && (
         <div className="modal-overlay">
           <div className="modal-box">
